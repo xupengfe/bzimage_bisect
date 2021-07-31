@@ -110,6 +110,8 @@ make_bzimage() {
   }
 
   cpu_num=$(cat /proc/cpuinfo | grep processor | wc -l)
+  # avoid adl make kernel failed
+  ((cpu_num-=4))
   do_cmd "cd $KERNEL_TARGET_PATH"
   print_log "make -j${cpu_num} bzImage" "$STATUS"
   do_cmd "make -j${cpu_num} bzImage"
