@@ -262,7 +262,7 @@ bisect_bz() {
     bisect_end=""
 
     [[ "$i" -eq 0 ]] && {
-      print_log "Bisect start commit:$START_COMMIT"
+      print_log "Bisect first start commit:$START_COMMIT"
       NEXT_COMMIT=$START_COMMIT
     }
 
@@ -273,7 +273,7 @@ bisect_bz() {
     }
     bisect_end=$(echo "$bisect_info" | grep "is the first bad commit")
     [[ -z "$bisect_end" ]] || {
-      print_log "Bisect PASS: find $bisect_end"
+      print_log "Bisect PASS: find $bisect_end" "$BISECT_LOG"
       do_cmd "git bisect log >> $BI_LOG"
       do_cmd "git bisect log >> $BISECT_LOG"
       exit 0
@@ -286,7 +286,7 @@ bisect_bz() {
             | awk -F '[' '{print $2}' \
             | awk -F ']' '{print $1}')
     commit=$(git log -1 | grep ^commit | cut -d ' ' -f 2)
-    if [[ "$commit" != "$commit_c" ]]; then
+    if [[ "$commit" == "$commit_c" ]]; then
       print_log "$commit is same as bisect tip commit_c:$commit_c"
       NEXT_COMMIT=$commit
     else
