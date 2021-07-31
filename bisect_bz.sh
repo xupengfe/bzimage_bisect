@@ -162,13 +162,13 @@ test_bz() {
     -smp 2 \
     -kernel $bz_file \
     -append "console=ttyS0 root=/dev/sda earlyprintk=serial net.ifnames=0" \
-    -drive file=./${IMAGE},format=raw \
+    -drive file=${IMAGE},format=raw \
     -net user,host=10.0.2.10,hostfwd=tcp:127.0.0.1:${PORT}-:22 \
     -cpu host \
     -net nic,model=e1000 \
     -enable-kvm \
     -nographic \
-    2>&1 | tee ${DEST}/vm.log
+    2>&1 | tee ${DEST}/vm.log &
   sleep "$BOOT_TIME"
 
   repro_bz
@@ -200,7 +200,7 @@ bisect_bz() {
   test_commit "$COMMIT"
   if [[ "$COMMIT_RESULT" -eq 0 ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
-    usage
+    exit 1
   else
     print_log "-END- commit $COMMIT FAIL $COMMIT_RESULT" "$BISECT_LOG"
   fi
