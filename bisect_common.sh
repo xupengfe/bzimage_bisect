@@ -10,8 +10,6 @@ COMMIT_RESULT=""
 BZ_LOG="make_bz.log"
 BISECT_LOG="bisect.log"
 
-
-
 print_log(){
   local log_info=$1
   local log_file=$2

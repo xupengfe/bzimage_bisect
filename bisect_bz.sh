@@ -5,7 +5,6 @@
 
 source "bisect_common.sh"
 
-BISECT_LOG=""
 TIME_FMT="%m%d_%H%M%S"
 BISECT_START_TIME=$(date +"$TIME_FMT")
 BISECT_SS=$(date +%s)
