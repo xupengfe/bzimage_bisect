@@ -241,7 +241,7 @@ bisect_bz() {
 
 
 # Set detault value
-: "${TIME:=10}"
+: "${TIME:=20}"
 : "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:h arg; do
   case $arg in
