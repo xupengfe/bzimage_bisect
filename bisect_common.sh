@@ -4,7 +4,8 @@ readonly PASS=0
 readonly FAIL=1
 
 KERNEL_PATH="/tmp/kernel"
-BASE_PATH=$(pwd)
+PATH_FILE="/tmp/base_path"
+BASE_PATH=$(cat $PATH_FILE)
 TIME_FMT="%m%d_%H%M%S"
 COMMIT_RESULT=""
 BZ_LOG="make_bz.log"

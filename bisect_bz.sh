@@ -14,7 +14,8 @@ USE_SEC=""
 BOOT_TIME="20"
 PORT="10022"
 REPRO="/root/repro.sh"
-
+BASE_PATH=$(pwd)
+echo $BASE_PATH > $PATH_FILE
 
 usage() {
   cat <<__EOF
