@@ -19,7 +19,7 @@ echo $BASE_PATH > $PATH_FILE
 
 usage() {
   cat <<__EOF
-  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-s][-d DEST][-p][-t][-i][-h]
+  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-s][-d DEST][-p][-t][-i][-n][-h]
   -k  KERNEL source folder
   -m  COMMIT(end) ID which will be used
   -s  Start COMMIT ID
@@ -27,6 +27,7 @@ usage() {
   -p  Check point in dmesg like "general protection"
   -t  Wait time(optional, default time like 10s)
   -i  Image file(optional, default is /root/image/stretch2.img)
+  -n  No need make clean kernel src
   -h  show this
 __EOF
   exit 1
@@ -93,7 +94,7 @@ parm_check() {
     print_err "IMAGE:$IMAGE is not exist" "$BISECT_LOG"
     usage
   }
-  echo 0 > "$NUM_FILE"
+  echo $NUM > "$NUM_FILE"
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"
@@ -242,8 +243,9 @@ bisect_bz() {
 
 # Set detault value
 : "${TIME:=20}"
+: "${NUM:=0}"
 : "${IMAGE:=/root/image/stretch2.img}"
-while getopts :k:m:s:d:p:t:i:h arg; do
+while getopts :k:m:s:d:p:t:i:n:h arg; do
   case $arg in
     k)
       KERNEL_SRC=$OPTARG
@@ -265,6 +267,9 @@ while getopts :k:m:s:d:p:t:i:h arg; do
       ;;
     i)
       IMAGE=$OPTARG
+      ;;
+    n)
+      NUM=$OPTARG
       ;;
     h)
       usage
