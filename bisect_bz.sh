@@ -24,7 +24,7 @@ usage() {
   -s  Start COMMIT ID
   -d  Destination where bzImage will be copied
   -p  Check point in dmesg like "general protection"
-  -t  Wait time(optional, default time like 10s)
+  -t  Wait time(optional, default time like 20s)
   -i  Image file(optional, default is /root/image/stretch2.img)
   -h  show this
 __EOF
@@ -155,6 +155,14 @@ check_bz_result() {
 
 test_bz() {
   local bz_file=$1
+  local old_vm=""
+
+  old_vm=$(ps -ef | grep qemu | grep $PORT  | awk -F " " '{print $2}')
+
+  [[ -z "$old_vm" ]] || {
+    print_log "Kill old $PORT qemu:$old_vm"
+    do_cmd "kill -9 $old_vm"
+  }
 
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
   qemu-system-x86_64 \
@@ -168,7 +176,7 @@ test_bz() {
     -net nic,model=e1000 \
     -enable-kvm \
     -nographic \
-    2>&1 | tee ${DEST}/vm.log &
+    2>&1 | > ${DEST}/vm.log &
   sleep "$BOOT_TIME"
 
   repro_bz
@@ -219,7 +227,7 @@ bisect_bz() {
 
 
 # Set detault value
-: "${TIME:=10}"
+: "${TIME:=20}"
 : "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:h arg; do
   case $arg in
