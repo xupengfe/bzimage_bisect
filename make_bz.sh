@@ -114,6 +114,7 @@ make_bzimage() {
   ((cpu_num-=4))
   do_cmd "cd $KERNEL_TARGET_PATH"
   print_log "make -j${cpu_num} bzImage" "$STATUS"
+  # make -j more threads cause make bzImage failed, so used j1 #TODO for more
   do_cmd "make -j1 bzImage"
   #do_cmd "make -j${cpu_num} bzImage"
   do_cmd "cp -rf ${KERNEL_TARGET_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
