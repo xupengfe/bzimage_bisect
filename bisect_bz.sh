@@ -77,7 +77,7 @@ parm_check() {
     usage
   }
 
-  print_log "PARM TIME:$TIME"
+  print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
 }
 
 check_commit() {
@@ -87,7 +87,7 @@ check_commit() {
   check_result=$(git log $commit | grep ^commit | head -n 1 2>/dev/null)
   [[ -n "$check_result" ]] || {
     print_err "There is no $commit info in $(pwd)" "$BISECT_LOG"
-    usage()
+    usage
   }
 }
 
@@ -260,3 +260,5 @@ main() {
   bisect_prepare
   bisect_bz
 }
+
+main
