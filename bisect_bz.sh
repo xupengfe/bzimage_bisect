@@ -220,7 +220,7 @@ bisect_bz() {
 
 # Set detault value
 : "${TIME:=10}"
-: "${IMAGE:='/root/image/stretch2.img'}"
+: "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:h arg; do
   case $arg in
     k)
