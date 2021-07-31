@@ -141,11 +141,11 @@ check_bz_result() {
   if [[ -z "$cp_result" ]]; then
     ssh -o ConnectTimeout=1 -p $PORT localhost "dmesg | grep 'general pro' 2>/dev/null"
     if [[ $? -eq 0 ]]; then
-      print_log "$bz_file connect err, consider as reproduced, fail"
-      COMMIT_RESULT="$FAIL"
-    else
-      print_log "$bz_file connect ok and no $POINT, pass"
+      print_log "$bz_file connect ok and no $POINT, pass" "$BISECT_LOG"
       COMMIT_RESULT="$PASS"
+    else
+      print_log "$bz_file connect err, consider as reproduced, fail" "$BISECT_LOG"
+      COMMIT_RESULT="$FAIL"
     fi
   else
     print_log "$bz_file contain $cp_result, FAIL" "$BISECT_LOG"
