@@ -122,7 +122,7 @@ prepare_kconfig() {
     do_cmd "make distclean"
     do_cmd "git clean -fdx"
   fi
-  (($make_num+=1))
+  ((make_num+=1))
   do_cmd "echo $make_num > $NUM_FILE"
 
   do_cmd "cp -rf $BASE_PATH/kconfig_kvm.sh ./"
