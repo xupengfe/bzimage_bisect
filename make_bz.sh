@@ -104,7 +104,7 @@ make_bzimage() {
     exit 1
   }
   tmp_num=$(echo $tmp_size | cut -d 'G' -f 1)
-  [[ "$tmp_num" -le "8" ]] || {
+  [[ "$tmp_num" -le "8" ]] && {
     print_log "/tmp available size is less than 8G, please make sure enough space to make kernel!" "$STATUS"
     exit 1
   }
