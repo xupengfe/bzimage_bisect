@@ -3,7 +3,7 @@
 readonly PASS="good"
 readonly FAIL="bad"
 
-KERNEL_PATH="/tmp/kernel"
+KERNEL_PATH="/root/kernel"
 PATH_FILE="/tmp/base_path"
 BASE_PATH=$(cat $PATH_FILE)
 TIME_FMT="%m%d_%H%M%S"

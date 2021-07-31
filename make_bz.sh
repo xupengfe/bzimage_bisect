@@ -97,7 +97,7 @@ make_bzimage() {
   local tmp_g=""
   local tmp_num=""
 
-  tmp_size=$(df -Ph /tmp | tail -n 1 | awk -F ' ' '{print $4}')
+  tmp_size=$(df -Ph $KERNEL_PATH | tail -n 1 | awk -F ' ' '{print $4}')
   tmp_g=$(echo $tmp_size | grep G)
   [[ -n "$tmp_g" ]] || {
     print_log "No G in tmp_size:$tmp_size" "$STATUS"
@@ -105,7 +105,7 @@ make_bzimage() {
   }
   tmp_num=$(echo $tmp_size | cut -d 'G' -f 1)
   [[ "$tmp_num" -le "8" ]] && {
-    print_log "/tmp available size is less than 8G, please make sure enough space to make kernel!" "$STATUS"
+    print_log "$KERNEL_PATH available size is less than 8G, please make sure enough space to make kernel!" "$STATUS"
     exit 1
   }
 
