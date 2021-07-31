@@ -98,13 +98,13 @@ prepare_kernel() {
     git checkout -f $COMMIT
     ret=$?
     if [[ "$ret" -eq 0 ]]; then
-      print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again"
+      print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$STATUS"
     else
-      print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC"
+      print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$STATUS"
       do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH"
     fi
   else
-    do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH"
+    do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH" "$STATUS"
   fi
 
   KERNEL_PATH="$kernel_target_path"
@@ -129,6 +129,7 @@ make_bzimage() {
 
   cpu_num=$(cat /proc/cpuinfo | grep processor | wc -l)
   do_cmd "cd $KERNEL_PATH"
+  print_log "make -j${cpu_num} bzImage" "$STATUS"
   do_cmd "make -j${cpu_num} bzImage"
   do_cmd "cp -rf ${KERNEL_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
   print_log "PASS: make bzImage pass"
