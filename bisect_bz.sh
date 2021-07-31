@@ -93,6 +93,7 @@ parm_check() {
     print_err "IMAGE:$IMAGE is not exist" "$BISECT_LOG"
     usage
   }
+  echo 0 > "$NUM_FILE"
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"

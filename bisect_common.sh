@@ -10,7 +10,7 @@ TIME_FMT="%m%d_%H%M%S"
 COMMIT_RESULT=""
 BZ_LOG="make_bz.log"
 BISECT_LOG="bisect.log"
-MAKE_NUM=0
+NUM_FILE="/tmp/make_num"
 
 print_log(){
   local log_info=$1
