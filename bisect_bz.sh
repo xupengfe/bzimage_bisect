@@ -111,7 +111,7 @@ bisect_prepare() {
 prepare_bz() {
   local commit=$1
 
-  [[ -z "$commit" ]] || {
+  [[ -n "$commit" ]] || {
     print_err "prepare_bz commit is null:$commit" "$BISECT_LOG"
     usage
   }
