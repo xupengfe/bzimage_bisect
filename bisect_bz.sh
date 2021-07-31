@@ -31,6 +31,17 @@ __EOF
   exit 1
 }
 
+clean_old_vm() {
+  local old_vm=""
+
+  old_vm=$(ps -ef | grep qemu | grep $PORT  | awk -F " " '{print $2}')
+
+  [[ -z "$old_vm" ]] || {
+    print_log "Kill old $PORT qemu:$old_vm"
+    kill -9 $old_vm
+  }
+}
+
 do_cmd() {
   local cmd=$*
   local result=""
@@ -43,8 +54,14 @@ do_cmd() {
     print_log "$CMD FAIL. Return code is $RESULT"
     print_log "$CMD FAIL. Return code is $RESULT" >> $BISECT_LOG
     git bisect log 2>/dev/null >> $BISECT_LOG
+    clean_old_vm
     exit $result
   fi
+}
+
+tear_down() {
+  print_log "Kill old $PORT qemu:$old_vm"
+    do_cmd "kill -9 $old_vm"
 }
 
 parm_check() {
@@ -77,6 +94,7 @@ parm_check() {
   }
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
+  export PATH="${PATH}:$BASE_PATH"
 }
 
 check_commit() {
@@ -155,15 +173,8 @@ check_bz_result() {
 
 test_bz() {
   local bz_file=$1
-  local old_vm=""
 
-  old_vm=$(ps -ef | grep qemu | grep $PORT  | awk -F " " '{print $2}')
-
-  [[ -z "$old_vm" ]] || {
-    print_log "Kill old $PORT qemu:$old_vm"
-    do_cmd "kill -9 $old_vm"
-  }
-
+  clean_old_vm
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
   qemu-system-x86_64 \
     -m 2G \
@@ -197,7 +208,6 @@ test_commit() {
   fi
 }
 
-
 bisect_bz() {
   local commit=""
 
@@ -208,6 +218,7 @@ bisect_bz() {
   test_commit "$COMMIT"
   if [[ "$COMMIT_RESULT" -eq 0 ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
+    clean_old_vm
     exit 1
   else
     print_log "-END- commit $COMMIT FAIL $COMMIT_RESULT" "$BISECT_LOG"
@@ -219,6 +230,7 @@ bisect_bz() {
     print_log "Start commit $COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
   else
     print_log "Srart commit $COMMIT FAIL, will stop!" "$BISECT_LOG"
+    clean_old_vm
     exit 0
   fi
 
