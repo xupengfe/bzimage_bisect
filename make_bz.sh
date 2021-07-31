@@ -120,7 +120,7 @@ prepare_kconfig() {
   if [[ "$make_num" -eq 0 ]]; then
     print_log "First time make bzImage, clean it" "$STATUS"
     do_cmd "make distclean"
-    do_cmd "git clena -fdx"
+    do_cmd "git clean -fdx"
   fi
   (($make_num+=1))
   do_cmd "echo $make_num > $NUM_FILE"
