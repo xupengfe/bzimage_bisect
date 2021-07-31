@@ -137,6 +137,21 @@ prepare_kconfig() {
 
 make_bzimage() {
   local cpu_num=""
+  local tmp_size=""
+  local tmp_g=""
+  local tmp_num=""
+
+  tmp_size=$(df -Ph /tmp | tail -n 1 | awk -F ' ' '{print $4}')
+  tmp_g=$(echo $tmp_size | grep G)
+  [[ -n "$tmp_g" ]] || {
+    print_log "No G in tmp_size:$tmp_size" "$STATUS"
+    exit 1
+  }
+  tmp_num=$(echo $tmp_size | cut -d 'G' -f 1)
+  [[ "$tmp_num" -le "8" ]] || {
+    print_log "/tmp available size is less than 8G, please make sure enough space to make kernel!" "$STATUS"
+    exit 1
+  }
 
   cpu_num=$(cat /proc/cpuinfo | grep processor | wc -l)
   do_cmd "cd $KERNEL_PATH"
