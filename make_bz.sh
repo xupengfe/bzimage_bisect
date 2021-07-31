@@ -6,7 +6,6 @@ set -e
 
 source "bisect_common.sh"
 
-KERNEL_PATH="/tmp/kernel"
 KCONFIG_NAME="kconfig"
 RESULT=""
 STATUS=""
@@ -68,54 +67,11 @@ parm_check() {
   print_log "parm check: KERNEL_SRC=$KERNEL_SRC COMMIT=$COMMIT DEST=$DEST $STATUS"
 }
 
-prepare_kernel() {
-  local kernel_folder=""
-  local kernel_target_path=""
-  local ret=""
-
-  # Get last kernel source like /usr/src/os.linux.intelnext.kernel/
-  kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $NF}')
-  [[ -n "$kernel_folder" ]] || {
-    kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $(NF-1)}')
-    [[ -n "$kernel_folder" ]] || {
-      print_err "FAIL: kernel_folder is null:$kernel_folder" "$STATUS"
-      usage
-    }
-  }
-
-  [[ -d "$KERNEL_SRC" ]] || {
-    print_err "FAIL:KERNEL_SRC:$KERNEL_SRC folder is not exist" "$STATUS"
-    usage
-  }
-
-  [[ -d "$KERNEL_PATH" ]] || {
-    do_cmd "rm -rf $KERNEL_PATH"
-    do_cmd "mkdir -p $KERNEL_PATH"
-  }
-
-  kernel_target_path="${KERNEL_PATH}/${kernel_folder}"
-  if [[ -d "$kernel_target_path" ]]; then
-    do_cmd "cd $kernel_target_path"
-    git checkout -f $COMMIT
-    ret=$?
-    if [[ "$ret" -eq 0 ]]; then
-      print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$STATUS"
-    else
-      print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$STATUS"
-      do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH"
-    fi
-  else
-    do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH" "$STATUS"
-  fi
-
-  KERNEL_PATH="$kernel_target_path"
-}
-
 prepare_kconfig() {
   local commit_short=""
   local make_num=""
 
-  do_cmd "cd $KERNEL_PATH"
+  do_cmd "cd $KERNEL_TARGET_PATH"
   make_num=$(cat $NUM_FILE)
   if [[ "$make_num" -eq 0 ]]; then
     print_log "First time make bzImage, clean it" "$STATUS"
@@ -154,14 +110,14 @@ make_bzimage() {
   }
 
   cpu_num=$(cat /proc/cpuinfo | grep processor | wc -l)
-  do_cmd "cd $KERNEL_PATH"
+  do_cmd "cd $KERNEL_TARGET_PATH"
   print_log "make -j${cpu_num} bzImage" "$STATUS"
   do_cmd "make -j${cpu_num} bzImage"
-  do_cmd "cp -rf ${KERNEL_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
+  do_cmd "cp -rf ${KERNEL_TARGET_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
   print_log "PASS: make bzImage pass"
   print_log "PASS: make bzImage pass" >> $STATUS
   echo "source_kernel:$KERNEL_SRC" >> $STATUS
-  echo "target_kernel:$KERNEL_PATH" >> $STATUS
+  echo "target_kernel:$KERNEL_TARGET_PATH" >> $STATUS
   echo "commit:$COMMIT" >> $STATUS
   echo "kconfig_source:$KCONFIG" >> $STATUS
   echo "Destination:$DEST" >> $STATUS

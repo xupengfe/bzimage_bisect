@@ -72,7 +72,11 @@ parm_check() {
     usage
   }
   BISECT_LOG="${DEST}/${BISECT_LOG}"
+  BI_LOG="${DEST}/bi.log"
   cat /dev/null > $BISECT_LOG
+  echo >> $BI_LOG
+  echo "-------------------------------------------------------" >> $BI_LOG
+  echo >> $BI_LOG
 
   [[ -d "$KERNEL_SRC/.git" ]] || {
     print_err "$KERNEL_SRC doesn't contain .git folder" "$BISECT_LOG"
@@ -123,7 +127,7 @@ bisect_init() {
 bisect_prepare() {
   local check_commit=""
 
-  do_cmd "cd $KERNEL_SRC"
+  do_cmd "cd $KERNEL_TARGET_PATH"
   check_commit "$COMMIT"
   check_commit "$START_COMMIT"
   bisect_init
@@ -209,17 +213,24 @@ test_commit() {
     print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
     exit 1
   fi
+  print_log "$commit $COMMIT_RESULT" "$BI_LOG"
+  clean_old_vm
 }
 
 bisect_bz() {
   local commit=""
+  local commit_c=""
+  local steps=""
+  local bisect_info=""
+  local i=""
 
-  do_cmd "git bisect start"
+  do_cmd "cd $KERNEL_TARGET_PATH"
   # Init make bzimage log
+  mv -f ${DEST}/${BZ_LOG} ${DEST}/${BZ_LOG}_previous
   cat /dev/null > ${DEST}/${BZ_LOG}
   # Check END COMMIT should test FAIl
   test_commit "$COMMIT"
-  if [[ "$COMMIT_RESULT" -eq 0 ]]; then
+  if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
     clean_old_vm
     exit 1
@@ -229,7 +240,7 @@ bisect_bz() {
 
   # Check START COMMIT should test PASS, other wise will stop(TODO for next)
   test_commit "$START_COMMIT"
-  if [[ "$COMMIT_RESULT" -eq 0 ]]; then
+  if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_log "Start commit $COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
   else
     print_log "Srart commit $COMMIT FAIL, will stop!" "$BISECT_LOG"
@@ -237,7 +248,53 @@ bisect_bz() {
     exit 0
   fi
 
-  # TODO bisect in while
+  # Set up bad with end commit, good with start commit
+  do_cmd "git checkout -f $COMMIT"
+  do_cmd "git bisect start"
+  do_cmd "git bisect bad $COMMIT"
+
+
+  for ((i=0; i<=100; i++)); do
+    cd $KERNEL_TARGET_PATH
+    commit=""
+    commit_c=""
+    bisect_info=""
+    bisect_end=""
+
+    [[ "$i" -eq 0 ]] && {
+      print_log "Bisect start commit:$START_COMMIT"
+      NEXT_COMMIT=$START_COMMIT
+    }
+
+    bisect_info=$(git bisect $COMMIT_RESULT $NEXT_COMMIT)
+    [[ -n "$bisect_info" ]] || {
+      print_err "No bisect_info:$bisect_info" "$BISECT_LOG"
+      exit 1
+    }
+    bisect_end=$(echo "$bisect_info" | grep "is the first bad commit")
+    [[ -z "$bisect_end" ]] || {
+      print_log "Bisect PASS: find $bisect_end"
+      do_cmd "git bisect log >> $BI_LOG"
+      do_cmd "git bisect log >> $BISECT_LOG"
+      exit 0
+    }
+    steps=$(echo "$bisect_info" | grep step)
+    [[ -n "$steps" ]] \
+      || print_log "WARN: no steps when start commit $START_COMMIT:$steps" "$BISECT_LOG"
+    commit_c=$(echo "$bisect_info" \
+            | grep "^\[" \
+            | awk -F '[' '{print $2}' \
+            | awk -F ']' '{print $1}')
+    commit=$(git log -1 | grep ^commit | cut -d ' ' -f 2)
+    if [[ "$commit" != "$commit_c" ]]; then
+      print_log "$commit is same as bisect tip commit_c:$commit_c"
+      NEXT_COMMIT=$commit
+    else
+      print_err "$commit is not same as bisect tip commit_c:$commit_c" "$BISECT_LOG"
+      exit 1
+    fi
+    test_commit "$NEXT_COMMIT"
+  done
 }
 
 
@@ -283,6 +340,7 @@ done
 
 main() {
   parm_check
+  prepare_kernel
   bisect_prepare
   bisect_bz
 }
