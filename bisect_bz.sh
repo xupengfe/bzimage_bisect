@@ -131,7 +131,7 @@ prepare_bz() {
 # TODO: improve reproduce step next step
 repro_bz() {
   print_log "ssh -o ConnectTimeout=1 -p $PORT localhost '$REPRO'"
-  ssh -o ConnectTimeout=1 -p $PORT localhost "$REPRO"
+  ssh -o ConnectTimeout=1 -p $PORT localhost "$REPRO" &
 }
 
 check_bz_result() {
