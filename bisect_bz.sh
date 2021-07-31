@@ -25,7 +25,7 @@ usage() {
   -s  Start COMMIT ID
   -d  Destination where bzImage will be copied
   -p  Check point in dmesg like "general protection"
-  -t  Wait time(optional, default time like 20s)
+  -t  Wait time(optional, default time like 10s)
   -i  Image file(optional, default is /root/image/stretch2.img)
   -h  show this
 __EOF
@@ -241,7 +241,7 @@ bisect_bz() {
 
 
 # Set detault value
-: "${TIME:=20}"
+: "${TIME:=10}"
 : "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:h arg; do
   case $arg in
