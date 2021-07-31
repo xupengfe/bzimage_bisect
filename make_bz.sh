@@ -114,7 +114,8 @@ make_bzimage() {
   ((cpu_num-=4))
   do_cmd "cd $KERNEL_TARGET_PATH"
   print_log "make -j${cpu_num} bzImage" "$STATUS"
-  do_cmd "make -j${cpu_num} bzImage"
+  do_cmd "make -j1 bzImage"
+  #do_cmd "make -j${cpu_num} bzImage"
   do_cmd "cp -rf ${KERNEL_TARGET_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
   print_log "PASS: make bzImage pass"
   print_log "PASS: make bzImage pass" >> $STATUS
