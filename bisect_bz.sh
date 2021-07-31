@@ -109,21 +109,21 @@ bisect_prepare() {
 }
 
 prepare_bz() {
-  local test_commit=$1
+  local commit=$1
 
-  [[ -z "$test_commit" ]] || {
-    print_err "prepare_bz test_commit is null:$test_commit" "$BISECT_LOG"
+  [[ -z "$commit" ]] || {
+    print_err "prepare_bz commit is null:$commit" "$BISECT_LOG"
     usage
   }
 
-  if [[ -e "${DEST}/bzImage_${test_commit}" ]]; then
-    print_log "${DEST}/bzImage_${test_commit} exist, no need make" "$BISECT_LOG"
+  if [[ -e "${DEST}/bzImage_${commit}" ]]; then
+    print_log "${DEST}/bzImage_${commit} exist, no need make" "$BISECT_LOG"
   else
-    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$test_commit" -d "$DEST"
+    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST"
   fi
 
-  [[ -e "${DEST}/bzImage_${test_commit}" ]] || {
-    print_err "Make ${DEST}/bzImage_${test_commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+  [[ -e "${DEST}/bzImage_${commit}" ]] || {
+    print_err "Make ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
     exit 1
   }
 }
@@ -178,20 +178,20 @@ test_bz() {
 }
 
 test_commit() {
-  local test_commit=$1
+  local commit=$1
   COMMIT_RESULT=""
 
-  prepare_bz "$test_commit"
-  test_bz "${DEST}/bzImage_${test_commit}"
+  prepare_bz "$commit"
+  test_bz "${DEST}/bzImage_${commit}"
   if [[ -z "$COMMIT_RESULT" ]]; then
-    print_err "After test $test_commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+    print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
     exit 1
   fi
 }
 
 
 bisect_bz() {
-  local test_commit=""
+  local commit=""
 
   do_cmd "git bisect start"
   # Init make bzimage log
