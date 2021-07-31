@@ -127,7 +127,7 @@ bisect_init() {
 bisect_prepare() {
   local check_commit=""
 
-  do_cmd "cd $KERNEL_TARGET_PATH"
+  do_cmd "cd $KERNEL_SRC"
   check_commit "$COMMIT"
   check_commit "$START_COMMIT"
   bisect_init
@@ -224,7 +224,7 @@ bisect_bz() {
   local bisect_info=""
   local i=""
 
-  do_cmd "cd $KERNEL_TARGET_PATH"
+  do_cmd "cd $KERNEL_SRC"
   # Init make bzimage log
   mv -f ${DEST}/${BZ_LOG} ${DEST}/${BZ_LOG}_previous
   cat /dev/null > ${DEST}/${BZ_LOG}
@@ -255,7 +255,7 @@ bisect_bz() {
 
 
   for ((i=0; i<=100; i++)); do
-    cd $KERNEL_TARGET_PATH
+    cd $KERNEL_SRC
     commit=""
     commit_c=""
     bisect_info=""
