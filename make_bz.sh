@@ -69,17 +69,8 @@ parm_check() {
 
 prepare_kconfig() {
   local commit_short=""
-  local make_num=""
 
   do_cmd "cd $KERNEL_TARGET_PATH"
-  make_num=$(cat $NUM_FILE)
-  if [[ "$make_num" -eq 0 ]]; then
-    print_log "First time make bzImage, clean it" "$STATUS"
-    do_cmd "make distclean"
-    do_cmd "git clean -fdx"
-  fi
-  ((make_num+=1))
-  do_cmd "echo $make_num > $NUM_FILE"
 
   do_cmd "cp -rf $BASE_PATH/kconfig_kvm.sh ./"
   do_cmd "wget $KCONFIG -O $KCONFIG_NAME"

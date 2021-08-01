@@ -34,10 +34,42 @@ print_err(){
     || echo "|$(date +"$TIME_FMT")|FAIL|$log_info|" >> $log_file
 }
 
+copy_kernel() {
+  local ker_src=$1
+  local ker_path=$2
+  local kernel_folder=""
+  local ker_tar_path=""
+
+  [[ -d "$ker_src" ]] || {
+    print_err "copy kernel:ker_src:$ker_src folder is not exist" "$STATUS"
+    usage
+  }
+
+  [[ -d "$ker_path" ]] || {
+    do_cmd "rm -rf $ker_path"
+    do_cmd "mkdir -p $ker_path"
+  }
+
+  kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $NF}')
+  [[ -n "$kernel_folder" ]] || {
+    kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $(NF-1)}')
+    [[ -n "$kernel_folder" ]] || {
+      print_err "copy kernel: kernel_folder is null:$kernel_folder" "$STATUS"
+      usage
+    }
+  }
+
+  ker_tar_path="${ker_path}/${kernel_folder}"
+
+  do_cmd "rm -rf $ker_tar_path"
+  do_cmd "cp -rf $ker_src $ker_path"
+}
+
 prepare_kernel() {
   local kernel_folder=""
   local kernel_target_path=""
   local ret=""
+  local make_num=""
 
   # Get last kernel source like /usr/src/os.linux.intelnext.kernel/
   kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $NF}')
@@ -59,6 +91,7 @@ prepare_kernel() {
     do_cmd "mkdir -p $KERNEL_PATH"
   }
 
+  make_num=$(cat $NUM_FILE)
   KERNEL_TARGET_PATH="${KERNEL_PATH}/${kernel_folder}"
   if [[ -d "$KERNEL_TARGET_PATH" ]]; then
     do_cmd "cd $KERNEL_TARGET_PATH"
@@ -68,9 +101,21 @@ prepare_kernel() {
       print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$STATUS"
     else
       print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$STATUS"
-      do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH"
+      copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
     fi
   else
-    do_cmd "cp -rf $KERNEL_SRC $KERNEL_PATH" "$STATUS"
+    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+    ((make_num+=1))
+    do_cmd "echo $make_num > $NUM_FILE"
   fi
+
+  if [[ "$make_num" -eq 0 ]]; then
+    print_log "First time make bzImage, copy and clean it" "$STATUS"
+    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+    do_cmd "make distclean"
+    do_cmd "git clean -fdx"
+  fi
+  ((make_num+=1))
+  print_log "make_num:$make_num" "$STATUS"
+  do_cmd "echo $make_num > $NUM_FILE"
 }
