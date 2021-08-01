@@ -112,6 +112,7 @@ prepare_kernel() {
   if [[ "$make_num" -eq 0 ]]; then
     print_log "First time make bzImage, copy and clean it" "$STATUS"
     copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+    do_cmd "cd $KERNEL_TARGET_PATH"
     do_cmd "make distclean"
     do_cmd "git clean -fdx"
   fi
