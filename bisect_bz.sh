@@ -211,7 +211,7 @@ test_bz() {
     -net nic,model=e1000 \
     -enable-kvm \
     -nographic \
-    2>&1 | tee ${DMESG_FOLDER}/${commit}_dmesg.log &
+    2>&1 | tee > ${DMESG_FOLDER}/${commit}_dmesg.log &
   sleep "$BOOT_TIME"
 
   repro_bz
