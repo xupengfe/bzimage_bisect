@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "gcc -o repro repro.c"
-gcc -o repro repro.c
+echo "gcc -pthread -o repro repro.c"
+gcc -pthread -o repro repro.c
 for((i=0; ;i++)); do
   echo "$i times ./repro"
   ./repro
