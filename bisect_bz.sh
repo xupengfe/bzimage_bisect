@@ -11,6 +11,7 @@ BISECT_SS=$(date +%s)
 BISECT_END_TIME=""
 BISECT_ES=""
 USE_SEC=""
+DMESG_FOLDER=""
 BOOT_TIME="20"
 PORT="10022"
 REPRO="/root/repro.sh"
@@ -124,6 +125,17 @@ bisect_init() {
   do_cmd "git checkout -f $COMMIT"
 }
 
+prepare_dmesg_folder() {
+  local issue_info=""
+
+  issue_info=$(echo $POINT | tr ' ' '_')
+  DMESG_FOLDER="${DEST}/${BISECT_START_TIME}_${issue_info}"
+  [[ -e "$DMESG_FOLDER" ]] && {
+    do_cmd "rm -rf $DMESG_FOLDER"
+    do_cmd "mkdir -p $DMESG_FOLDER"
+  }
+}
+
 bisect_prepare() {
   local check_commit=""
 
@@ -131,6 +143,7 @@ bisect_prepare() {
   check_commit "$COMMIT"
   check_commit "$START_COMMIT"
   bisect_init
+  prepare_dmesg_folder
 }
 
 prepare_bz() {
@@ -160,26 +173,30 @@ repro_bz() {
 }
 
 check_bz_result() {
+  local bz_file=$1
+  local dmesg_file=$2
+  local dmesg_info=""
   local cp_result=""
 
-  cp_result=$(ssh -o ConnectTimeout=1 -p $PORT localhost "dmesg | grep 'general pro' 2>/dev/null")
+  dmesg_info=$(cat $dmesg_file)
+  [[ -n "$dmesg_info" ]] || {
+    print_err "dmesg info is null:$dmesg_info, could not judge!" "$BISECT_LOG"
+    exit 1
+  }
+
+  cp_result=$(cat $dmesg_file | grep -i "$POINT")
   if [[ -z "$cp_result" ]]; then
-    ssh -o ConnectTimeout=1 -p 10022 localhost "uptime"
-    if [[ $? -eq 0 ]]; then
-      print_log "$bz_file connect ok and no $POINT, pass" "$BISECT_LOG"
-      COMMIT_RESULT="$PASS"
-    else
-      print_log "WARN: $bz_file connect err, consider as reproduced, fail" "$BISECT_LOG"
-      COMMIT_RESULT="$FAIL"
-    fi
+    print_log "$bz_file didn't contain $POINT:$cp_result in dmesg, pass" "$BISECT_LOG"
+    COMMIT_RESULT="$PASS"
   else
-    print_log "$bz_file contain $cp_result, FAIL" "$BISECT_LOG"
+    print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
     COMMIT_RESULT="$FAIL"
   fi
 }
 
 test_bz() {
   local bz_file=$1
+  local commit=$2
 
   clean_old_vm
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
@@ -194,13 +211,13 @@ test_bz() {
     -net nic,model=e1000 \
     -enable-kvm \
     -nographic \
-    2>&1 | > ${DEST}/vm.log &
+    2>&1 | tee ${DMESG_FOLDER}/${commit}_dmesg.log &
   sleep "$BOOT_TIME"
 
   repro_bz
   sleep "$TIME"
 
-  check_bz_result "$bz_file"
+  check_bz_result "$bz_file" "${DMESG_FOLDER}/${commit}_dmesg.log"
 }
 
 test_commit() {
@@ -208,7 +225,7 @@ test_commit() {
   COMMIT_RESULT=""
 
   prepare_bz "$commit"
-  test_bz "${DEST}/bzImage_${commit}"
+  test_bz "${DEST}/bzImage_${commit}" "$commit"
   if [[ -z "$COMMIT_RESULT" ]]; then
     print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
     exit 1
@@ -340,7 +357,6 @@ done
 
 main() {
   parm_check
-  prepare_kernel
   bisect_prepare
   bisect_bz
 }
