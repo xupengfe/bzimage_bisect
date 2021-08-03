@@ -15,12 +15,15 @@ DMESG_FOLDER=""
 BOOT_TIME="20"
 PORT="10022"
 REPRO="/root/repro.sh"
+REPRO_SH="repro.sh"
+REPRO_FILE="/root/repro.c"
 BASE_PATH=$(pwd)
 echo $BASE_PATH > $PATH_FILE
+NUM_PREPARE=0
 
 usage() {
   cat <<__EOF
-  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-s][-d DEST][-p][-t][-i][-n][-h]
+  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-s][-d DEST][-p][-t][-i][-n][-r][-h]
   -k  KERNEL source folder
   -m  COMMIT(end) ID which will be used
   -s  Start COMMIT ID
@@ -29,6 +32,7 @@ usage() {
   -t  Wait time(optional, default time like 10s)
   -i  Image file(optional, default is /root/image/stretch2.img)
   -n  No need make clean kernel src
+  -r  Reproduce file
   -h  show this
 __EOF
   exit 1
@@ -140,8 +144,6 @@ prepare_dmesg_folder() {
 }
 
 bisect_prepare() {
-  local check_commit=""
-
   do_cmd "cd $KERNEL_SRC"
   check_commit "$COMMIT"
   check_commit "$START_COMMIT"
@@ -171,6 +173,23 @@ prepare_bz() {
 
 # TODO: improve reproduce step next step
 repro_bz() {
+
+  if [[ "$NUM_PREPARE" -eq 0 ]]; then
+    if [[ -z "$REPRO_C" ]]; then
+      do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO'"
+      do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO_FILE'"
+    else
+      [[ -e "$REPRO_C" ]] || {
+        print_err "$REPRO_C is not exist" "$BISECT_LOG"
+        exit 1
+      }
+      do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/"
+      do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/"
+    fi
+    ((NUM_PREPARE+=1))
+  fi
+
+  do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls $REPRO'"
   print_log "ssh -o ConnectTimeout=1 -p $PORT localhost '$REPRO'"
   ssh -o ConnectTimeout=1 -p $PORT localhost "$REPRO" &
 }
@@ -322,7 +341,7 @@ bisect_bz() {
 : "${TIME:=20}"
 : "${NUM:=0}"
 : "${IMAGE:=/root/image/stretch2.img}"
-while getopts :k:m:s:d:p:t:i:n:h arg; do
+while getopts :k:m:s:d:p:t:i:n:r:h arg; do
   case $arg in
     k)
       KERNEL_SRC=$OPTARG
@@ -347,6 +366,9 @@ while getopts :k:m:s:d:p:t:i:n:h arg; do
       ;;
     n)
       NUM=$OPTARG
+      ;;
+    r)
+      REPRO_C=$OPTARG
       ;;
     h)
       usage
