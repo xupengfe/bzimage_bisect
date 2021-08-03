@@ -68,6 +68,8 @@ copy_kernel() {
 }
 
 prepare_kernel() {
+  local commit=$1
+  local log_file=$2
   local kernel_folder=""
   local kernel_target_path=""
   local ret=""
@@ -78,13 +80,13 @@ prepare_kernel() {
   [[ -n "$kernel_folder" ]] || {
     kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $(NF-1)}')
     [[ -n "$kernel_folder" ]] || {
-      print_err "FAIL: kernel_folder is null:$kernel_folder" "$STATUS"
+      print_err "FAIL: kernel_folder is null:$kernel_folder" "$log_file"
       usage
     }
   }
 
   [[ -d "$KERNEL_SRC" ]] || {
-    print_err "FAIL:KERNEL_SRC:$KERNEL_SRC folder is not exist" "$STATUS"
+    print_err "FAIL:KERNEL_SRC:$KERNEL_SRC folder is not exist" "$log_file"
     usage
   }
 
@@ -97,12 +99,13 @@ prepare_kernel() {
   KERNEL_TARGET_PATH="${KERNEL_PATH}/${kernel_folder}"
   if [[ -d "$KERNEL_TARGET_PATH" ]]; then
     do_cmd "cd $KERNEL_TARGET_PATH"
+
     git checkout -f $COMMIT
     ret=$?
     if [[ "$ret" -eq 0 ]]; then
-      print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$STATUS"
+      print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$log_file"
     else
-      print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$STATUS"
+      print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$log_file"
       copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
     fi
   else
@@ -112,13 +115,13 @@ prepare_kernel() {
   fi
 
   if [[ "$make_num" -eq 0 ]]; then
-    print_log "First time make bzImage, copy and clean it" "$STATUS"
+    print_log "First time make bzImage, copy and clean it" "$log_file"
     copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
     do_cmd "cd $KERNEL_TARGET_PATH"
     do_cmd "make distclean"
     do_cmd "git clean -fdx"
   fi
   ((make_num+=1))
-  print_log "make_num:$make_num" "$STATUS"
+  print_log "make_num:$make_num" "$log_file"
   do_cmd "echo $make_num > $NUM_FILE"
 }

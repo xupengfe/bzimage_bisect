@@ -168,7 +168,7 @@ fi
 
 main() {
   parm_check
-  prepare_kernel
+  prepare_kernel "$COMMIT" "$STATUS"
   prepare_kconfig
   make_bzimage
 }
