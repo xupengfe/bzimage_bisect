@@ -20,7 +20,6 @@ REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
 BASE_PATH=$(pwd)
 echo $BASE_PATH > $PATH_FILE
-NUM_PREPARE=0
 
 usage() {
   cat <<__EOF
