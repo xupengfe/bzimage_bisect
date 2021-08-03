@@ -168,7 +168,7 @@ fi
 
 make_bz_img() {
   parm_check
-  prepare_kernel "$COMMIT" "$STATUS"
+  prepare_kernel "$KERNEL_SRC" "$KERNEL_PATH" "$COMMIT" "$STATUS"
   prepare_kconfig
   make_bzimage
 }
