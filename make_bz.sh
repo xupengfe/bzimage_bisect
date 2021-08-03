@@ -108,7 +108,7 @@ make_bzimage() {
 
   # make -j more threads cause make bzImage failed, so used j1 #TODO for more
   print_log "make -j1 bzImage for $COMMIT" "$STATUS"
-  make -j1 bzImage 2> "$STATUS"
+  make -j1 bzImage 2>> "$STATUS"
   result_make=$?
   #do_cmd "make -j${cpu_num} bzImage"
 
