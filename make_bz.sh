@@ -7,7 +7,6 @@ set -e
 source "bisect_common.sh"
 
 KCONFIG_NAME="kconfig"
-RESULT=""
 STATUS=""
 
 KCONFIG="https://raw.githubusercontent.com/xupengfe/kconfig_diff/main/config-5.13i_kvm"
@@ -38,8 +37,7 @@ do_cmd() {
   eval "$cmd"
   result=$?
   if [[ $result -ne 0 ]]; then
-    print_log "$CMD FAIL. Return code is $RESULT"
-    print_log "$CMD FAIL. Return code is $RESULT" >> $STATUS
+    print_log "$CMD FAIL. Return code is $RESULT" "$STATUS"
     exit $result
   fi
 }
@@ -87,6 +85,7 @@ make_bzimage() {
   local tmp_size=""
   local tmp_g=""
   local tmp_num=""
+  local result_make=""
 
   tmp_size=$(df -Ph $KERNEL_PATH | tail -n 1 | awk -F ' ' '{print $4}')
   tmp_g=$(echo $tmp_size | grep G)
@@ -105,25 +104,34 @@ make_bzimage() {
   ((cpu_num-=4))
   do_cmd "cd $KERNEL_TARGET_PATH"
   print_log "make -j${cpu_num} bzImage" "$STATUS"
+
   # make -j more threads cause make bzImage failed, so used j1 #TODO for more
-  do_cmd "make -j1 bzImage"
+  print_log "make -j1 bzImage for $COMMIT" "$STATUS"
+  make -j1 bzImage 2> "$STATUS"
+  result_make=$?
   #do_cmd "make -j${cpu_num} bzImage"
-  do_cmd "cp -rf ${KERNEL_TARGET_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
-  print_log "PASS: make bzImage pass"
-  print_log "PASS: make bzImage pass" >> $STATUS
-  echo "source_kernel:$KERNEL_SRC" >> $STATUS
-  echo "target_kernel:$KERNEL_TARGET_PATH" >> $STATUS
-  echo "commit:$COMMIT" >> $STATUS
-  echo "kconfig_source:$KCONFIG" >> $STATUS
-  echo "Destination:$DEST" >> $STATUS
-  echo "bzImage:${DEST}/bzImage_${COMMIT}" >> $STATUS
-  echo "DATE_START:$DATE_START" >> $STATUS
-  DATE_END=$(date +"$TIME_FMT")
-  DATE_ES=$(date +%s)
-  echo "DATE_END:$DATE_END" >> $STATUS
-  USE_SEC=$(( $DATE_ES - $DATE_SS ))
-  echo "Used seconds:$USE_SEC sec" >> $STATUS
-  print_log "Used $USE_SEC seconds"
+
+  if [[ "$result_make" -eq 0 ]]; then
+    do_cmd "cp -rf ${KERNEL_TARGET_PATH}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
+    MAKE_RESULT=0
+    print_log "PASS: make bzImage pass" "$STATUS"
+    echo "source_kernel:$KERNEL_SRC" >> $STATUS
+    echo "target_kernel:$KERNEL_TARGET_PATH" >> $STATUS
+    echo "commit:$COMMIT" >> $STATUS
+    echo "kconfig_source:$KCONFIG" >> $STATUS
+    echo "Destination:$DEST" >> $STATUS
+    echo "bzImage:${DEST}/bzImage_${COMMIT}" >> $STATUS
+    echo "DATE_START:$DATE_START" >> $STATUS
+    DATE_END=$(date +"$TIME_FMT")
+    DATE_ES=$(date +%s)
+    echo "DATE_END:$DATE_END" >> $STATUS
+    USE_SEC=$(( $DATE_ES - $DATE_SS ))
+
+    print_log "Used $USE_SEC seconds" "$STATUS"
+  else
+    MAKE_RESULT=1
+    print_err "FAIL: make bzImage_${COMMIT} fail" "$STATUS"
+  fi
 }
 
 result=0

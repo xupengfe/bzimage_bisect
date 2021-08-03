@@ -155,7 +155,7 @@ prepare_bz() {
   local commit=$1
 
   [[ -n "$commit" ]] || {
-    print_err "prepare_bz commit is null:$commit" "$BISECT_LOG"
+    print_err "prepare bz commit is null:$commit" "$BISECT_LOG"
     usage
   }
 
@@ -165,9 +165,15 @@ prepare_bz() {
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST"
   fi
 
-  [[ -e "${DEST}/bzImage_${commit}" ]] || {
-    print_err "Make ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
-    exit 1
+  [[ "$MAKE_RESULT" -eq 0 ]] || {
+    if [[ "$commit" == "$COMMIT" ]]; then
+      print_err "END ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+      exit 1
+    fi
+    if [[ "$commit" == "$START_COMMIT" ]]; then
+      print_err "START ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+      exit 1
+    fi
   }
 }
 
@@ -247,10 +253,14 @@ test_commit() {
   COMMIT_RESULT=""
 
   prepare_bz "$commit"
-  test_bz "${DEST}/bzImage_${commit}" "$commit"
-  if [[ -z "$COMMIT_RESULT" ]]; then
-    print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
-    exit 1
+  if [[ "$MAKE_RESULT" -eq 0 ]]; then
+    test_bz "${DEST}/bzImage_${commit}" "$commit"
+    if [[ -z "$COMMIT_RESULT" ]]; then
+      print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+      exit 1
+    fi
+  else
+    COMMIT_RESULT="$SKIP"
   fi
   print_log "$commit $COMMIT_RESULT" "$BI_LOG"
   clean_old_vm
@@ -294,7 +304,7 @@ bisect_bz() {
   do_cmd "git bisect start"
   do_cmd "git bisect bad $COMMIT"
 
-
+  # should not bisect more than 99 steps
   for ((i=0; i<=100; i++)); do
     cd $KERNEL_SRC
     commit=""

@@ -2,6 +2,7 @@
 
 readonly PASS="good"
 readonly FAIL="bad"
+readonly SKIP="skip"
 
 KERNEL_PATH="/tmp/kernel"
 PATH_FILE="/tmp/base_path"
@@ -14,6 +15,7 @@ NUM_FILE="/tmp/make_num"
 KERNEL_TARGET_PATH=""
 NEXT_COMMIT=""
 BI_LOG=""
+MAKE_RESULT=""
 
 print_log(){
   local log_info=$1
