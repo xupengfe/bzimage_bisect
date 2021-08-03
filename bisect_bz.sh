@@ -226,6 +226,10 @@ test_bz() {
   local commit=$2
 
   clean_old_vm
+  [[ -e "$bz_file" ]] || {
+    print_err "bzImage:$bz_file is not exist" "$BISECT_LOG"
+    exit 1
+  }
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
   qemu-system-x86_64 \
     -m 2G \

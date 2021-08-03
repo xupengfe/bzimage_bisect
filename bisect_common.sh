@@ -39,11 +39,12 @@ print_err(){
 copy_kernel() {
   local ker_src=$1
   local ker_path=$2
+  local log_file=$3
   local kernel_folder=""
   local ker_tar_path=""
 
   [[ -d "$ker_src" ]] || {
-    print_err "copy kernel:ker_src:$ker_src folder is not exist" "$STATUS"
+    print_err "copy kernel:ker_src:$ker_src folder is not exist" "$log_file"
     usage
   }
 
@@ -56,7 +57,7 @@ copy_kernel() {
   [[ -n "$kernel_folder" ]] || {
     kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $(NF-1)}')
     [[ -n "$kernel_folder" ]] || {
-      print_err "copy kernel: kernel_folder is null:$kernel_folder" "$STATUS"
+      print_err "copy kernel: kernel_folder is null:$kernel_folder" "$log_file"
       usage
     }
   }
@@ -102,21 +103,22 @@ prepare_kernel() {
 
     git checkout -f $COMMIT
     ret=$?
+    print_log "git check out ret value:$ret"
     if [[ "$ret" -eq 0 ]]; then
       print_log "git checkout -f $COMMIT pass, no need copy $KERNEL_SRC again" "$log_file"
     else
       print_log "git checkout -f $COMMIT failed:$ret, will copy $KERNEL_SRC" "$log_file"
-      copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+      copy_kernel "$KERNEL_SRC" "$KERNEL_PATH" "$log_file"
     fi
   else
-    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH" "$log_file"
     ((make_num+=1))
     do_cmd "echo $make_num > $NUM_FILE"
   fi
 
   if [[ "$make_num" -eq 0 ]]; then
     print_log "First time make bzImage, copy and clean it" "$log_file"
-    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH"
+    copy_kernel "$KERNEL_SRC" "$KERNEL_PATH" "$log_file"
     do_cmd "cd $KERNEL_TARGET_PATH"
     do_cmd "make distclean"
     do_cmd "git clean -fdx"

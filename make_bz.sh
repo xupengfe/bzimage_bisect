@@ -166,11 +166,11 @@ else
   done
 fi
 
-main() {
+make_bz_img() {
   parm_check
   prepare_kernel "$COMMIT" "$STATUS"
   prepare_kconfig
   make_bzimage
 }
 
-main
+make_bz_img
