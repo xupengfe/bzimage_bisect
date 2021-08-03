@@ -76,6 +76,7 @@ prepare_kconfig() {
   print_log "commit 0-12:$commit_short"
   do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
   do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
+  print_log "git checkout -f $COMMIT" "$STATUS"
   do_cmd "git checkout -f $COMMIT"
   do_cmd "make olddefconfig"
 }

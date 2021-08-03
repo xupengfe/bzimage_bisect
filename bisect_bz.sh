@@ -71,39 +71,55 @@ tear_down() {
     do_cmd "kill -9 $old_vm"
 }
 
+prepare_dmesg_folder() {
+  local issue_info=""
+
+  issue_info=$(echo $POINT | tr ' ' '_')
+  DMESG_FOLDER="${DEST}/${BISECT_START_TIME}_${issue_info}"
+  print_log "Prepare $DMESG_FOLDER" "$BISECT_LOG"
+  if [[ -e "$DMESG_FOLDER" ]]; then
+    do_cmd "rm -rf $DMESG_FOLDER"
+    do_cmd "mkdir -p $DMESG_FOLDER"
+  else
+    do_cmd "mkdir -p $DMESG_FOLDER"
+  fi
+}
+
 parm_check() {
   [[ -d "$DEST" ]]  || {
     print_log "DEST:$DEST folder is not exist!"
     usage
   }
-  BISECT_LOG="${DEST}/${BISECT_LOG}"
+
+  [[ -d "$KERNEL_SRC/.git" ]] || {
+    print_err "$KERNEL_SRC doesn't contain .git folder"
+    usage
+  }
+  [[ -n  "$COMMIT" ]] || {
+    print_err "commit:$COMMIT is null."
+    usage
+  }
+  [[ -n  "$START_COMMIT" ]] || {
+    print_err "Start commit:$START_COMMIT is null."
+    usage
+  }
+  [[ -n "$POINT" ]] || {
+    print_err "Check point:$POINT is null."
+    usage
+  }
+  [[ -e "$IMAGE" ]] || {
+    print_err "IMAGE:$IMAGE is not exist"
+    usage
+  }
+  echo $NUM > "$NUM_FILE"
+
+  prepare_dmesg_folder
+  BISECT_LOG="${DMESG_FOLDER}/${BISECT_LOG}"
   BI_LOG="${DEST}/bi.log"
   cat /dev/null > $BISECT_LOG
   echo >> $BI_LOG
   echo "-------------------------------------------------------" >> $BI_LOG
   echo >> $BI_LOG
-
-  [[ -d "$KERNEL_SRC/.git" ]] || {
-    print_err "$KERNEL_SRC doesn't contain .git folder" "$BISECT_LOG"
-    usage
-  }
-  [[ -n  "$COMMIT" ]] || {
-    print_err "commit:$COMMIT is null." "$BISECT_LOG"
-    usage
-  }
-  [[ -n  "$START_COMMIT" ]] || {
-    print_err "Start commit:$START_COMMIT is null." "$BISECT_LOG"
-    usage
-  }
-  [[ -n "$POINT" ]] || {
-    print_err "Check point:$POINT is null." "$BISECT_LOG"
-    usage
-  }
-  [[ -e "$IMAGE" ]] || {
-    print_err "IMAGE:$IMAGE is not exist" "$BISECT_LOG"
-    usage
-  }
-  echo $NUM > "$NUM_FILE"
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"
@@ -129,26 +145,11 @@ bisect_init() {
   do_cmd "git checkout -f $COMMIT"
 }
 
-prepare_dmesg_folder() {
-  local issue_info=""
-
-  issue_info=$(echo $POINT | tr ' ' '_')
-  DMESG_FOLDER="${DEST}/${BISECT_START_TIME}_${issue_info}"
-  print_log "Prepare $DMESG_FOLDER" "$BISECT_LOG"
-  if [[ -e "$DMESG_FOLDER" ]]; then
-    do_cmd "rm -rf $DMESG_FOLDER"
-    do_cmd "mkdir -p $DMESG_FOLDER"
-  else
-    do_cmd "mkdir -p $DMESG_FOLDER"
-  fi
-}
-
 bisect_prepare() {
   do_cmd "cd $KERNEL_SRC"
   check_commit "$COMMIT"
   check_commit "$START_COMMIT"
   bisect_init
-  prepare_dmesg_folder
 }
 
 prepare_bz() {
