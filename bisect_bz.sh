@@ -264,9 +264,11 @@ bisect_bz() {
   local i=""
 
   do_cmd "cd $KERNEL_SRC"
-  # Init make bzimage log
-  mv -f ${DEST}/${BZ_LOG} ${DEST}/${BZ_LOG}_previous
-  cat /dev/null > ${DEST}/${BZ_LOG}
+  # Init next cycle make bzimage log
+  echo >> ${DEST}/${BZ_LOG}
+  echo "-------------------------------------------------------" >> ${DEST}/${BZ_LOG}
+  echo >> ${DEST}/${BZ_LOG}
+
   # Check END COMMIT should test FAIl
   test_commit "$COMMIT"
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
