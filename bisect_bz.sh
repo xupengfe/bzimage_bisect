@@ -16,6 +16,7 @@ BOOT_TIME="20"
 PORT="10022"
 REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
+REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
 BASE_PATH=$(pwd)
 echo $BASE_PATH > $PATH_FILE
@@ -189,8 +190,10 @@ repro_bz() {
         print_err "$REPRO_C is not exist" "$BISECT_LOG"
         exit 1
       }
-      do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/"
-      do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/"
+      do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
+      sleep 1
+      do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
+      sleep 1
     fi
     ((NUM_PREPARE+=1))
   fi
