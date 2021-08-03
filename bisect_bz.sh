@@ -180,22 +180,18 @@ prepare_bz() {
 
 # TODO: improve reproduce step next step
 repro_bz() {
-
-  if [[ "$NUM_PREPARE" -eq 0 ]]; then
-    if [[ -z "$REPRO_C" ]]; then
-      do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO'"
-      do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO_FILE'"
-    else
-      [[ -e "$REPRO_C" ]] || {
-        print_err "$REPRO_C is not exist" "$BISECT_LOG"
-        exit 1
-      }
-      do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
-      sleep 1
-      do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
-      sleep 1
-    fi
-    ((NUM_PREPARE+=1))
+  if [[ -z "$REPRO_C" ]]; then
+    do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO'"
+    do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO_FILE'"
+  else
+    [[ -e "$REPRO_C" ]] || {
+      print_err "$REPRO_C is not exist" "$BISECT_LOG"
+      exit 1
+    }
+    do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
+    sleep 1
+    do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
+    sleep 1
   fi
 
   do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls $REPRO'"
