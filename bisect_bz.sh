@@ -120,6 +120,7 @@ parm_check() {
   echo >> $BI_LOG
   echo "-------------------------------------------------------" >> $BI_LOG
   echo >> $BI_LOG
+  print_log " $DMESG_FOLDER" >> $BI_LOG
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"
