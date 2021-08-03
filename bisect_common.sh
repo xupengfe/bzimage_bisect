@@ -104,7 +104,6 @@ prepare_kernel() {
     do_cmd "cd $KERNEL_TARGET_PATH"
 
     ret=$(git log "$commit" 2>/dev/null | head -n 1)
-    print_log "git check out ret value:$ret" "$log_file"
     if [[ -n "$ret" ]]; then
       print_log "git check $commit pass, no need copy $ker_src again" "$log_file"
     else
