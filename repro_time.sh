@@ -54,7 +54,7 @@ parm_check() {
     usage
   }
 
-  [[ -d "$REPRO_FOLDER" ]] {
+  [[ -d "$REPRO_FOLDER" ]] || {
     print_log "$REPRO_FOLDER folder does not exist, will create it"
     do_cmd "rm -rf $REPRO_FOLDER"
     do_cmd "mkdir -p $REPRO_FOLDER"
