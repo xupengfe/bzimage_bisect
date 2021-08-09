@@ -175,8 +175,9 @@ while getopts :b:p:i:r:h arg; do
   case $arg in
     b)
       BZIMAGE=$OPTARG
-      REPRO_LOG="${REPRO_FOLDER}/${BZIMAGE}.log"
-      REPRO_DMESG="${REPRO_FOLDER}/${BZIMAGE}.dmesg"
+      BZ=$(echo "$BZIMAGE" | awk -F "/" '{print $NF}')
+      REPRO_LOG="${REPRO_FOLDER}/${BZ}.log"
+      REPRO_DMESG="${REPRO_FOLDER}/${BZ}.dmesg"
       ;;
     p)
       POINT=$OPTARG
