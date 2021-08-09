@@ -87,7 +87,7 @@ prepare_dmesg_folder() {
 
 parm_check() {
   [[ -d "$DEST" ]]  || {
-    print_log "DEST:$DEST folder is not exist!"
+    print_log "DEST:$DEST folder does not exist!"
     usage
   }
 
@@ -108,7 +108,7 @@ parm_check() {
     usage
   }
   [[ -e "$IMAGE" ]] || {
-    print_err "IMAGE:$IMAGE is not exist"
+    print_err "IMAGE:$IMAGE does not exist"
     usage
   }
   echo $NUM > "$NUM_FILE"
@@ -186,7 +186,7 @@ repro_bz() {
     do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO_FILE'"
   else
     [[ -e "$REPRO_C" ]] || {
-      print_err "$REPRO_C is not exist" "$BISECT_LOG"
+      print_err "$REPRO_C does not exist" "$BISECT_LOG"
       exit 1
     }
     do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
@@ -228,7 +228,7 @@ test_bz() {
 
   clean_old_vm
   [[ -e "$bz_file" ]] || {
-    print_err "bzImage:$bz_file is not exist" "$BISECT_LOG"
+    print_err "bzImage:$bz_file does not exist" "$BISECT_LOG"
     exit 1
   }
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
