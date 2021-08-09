@@ -7,7 +7,7 @@ source "bisect_common.sh"
 TIME_FMT="%m%d_%H%M%S"
 START_TIME=$(date +"$TIME_FMT")
 END_TIME=""
-DATE_SS=$(date +%s)
+DATE_SS=""
 DATE_ES=""
 USE_SEC=""
 BOOT_TIME="20"
@@ -110,8 +110,9 @@ check_bz_time() {
   local cp_result=""
   local i=1
 
+  DATE_SS=$(date +%s)
   for((i=1;i<=300;i++)); do
-    sleep 10
+    sleep 5
     dmesg_info=$(cat $dmesg_file)
     [[ -n "$dmesg_info" ]] || {
       print_err "$dmesg_file is null:$dmesg_info, could not judge!" "$REPRO_LOG"
@@ -127,12 +128,13 @@ check_bz_time() {
       END_TIME=$(date +"$TIME_FMT")
       DATE_ES=$(date +%s)
       USE_SEC=$(($DATE_ES - $DATE_SS))
-      echo "START_TIME:$START_TIME" >> "$REPRO_LOG"
-      echo "END_TIME:$END_TIME" >> "$REPRO_LOG"
-      echo "Used $USE_SEC seconds to reproduce" >> "$REPRO_LOG"
+      print_log "START_TIME:$START_TIME" >> "$REPRO_LOG"
+      print_log "END_TIME:$END_TIME" >> "$REPRO_LOG"
+      print_log "Used $USE_SEC seconds to reproduce" >> "$REPRO_LOG"
 
       return 0
     fi
+
   done
 
   print_log "$dmesg_file not reproduce this issue in 3000s:$bz_file, exit!" "$REPRO_LOG"
