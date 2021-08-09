@@ -53,6 +53,12 @@ parm_check() {
     print_err "REPRO_C:$REPRO_C does not exist"
     usage
   }
+
+  [[ -d "$REPRO_FOLDER" ]] {
+    print_log "$REPRO_FOLDER folder does not exist, will create it"
+    do_cmd "rm -rf $REPRO_FOLDER"
+    do_cmd "mkdir -p $REPRO_FOLDER"
+  }
 }
 
 do_cmd() {
@@ -108,7 +114,8 @@ check_bz_time() {
     sleep 10
     dmesg_info=$(cat $dmesg_file)
     [[ -n "$dmesg_info" ]] || {
-      print_err "dmesg info is null:$dmesg_info, could not judge!" "$REPRO_LOG"
+      print_err "$dmesg_file is null:$dmesg_info, could not judge!" "$REPRO_LOG"
+      clean_old_vm
       exit 1
     }
 
@@ -128,7 +135,7 @@ check_bz_time() {
     fi
   done
 
-  print_log "Could not reproduce this issue in 3000s:$bz_file, exit!" "$REPRO_LOG"
+  print_log "$dmesg_file not reproduce this issue in 3000s:$bz_file, exit!" "$REPRO_LOG"
   return 1
 }
 
