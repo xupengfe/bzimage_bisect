@@ -59,6 +59,8 @@ parm_check() {
     do_cmd "rm -rf $REPRO_FOLDER"
     do_cmd "mkdir -p $REPRO_FOLDER"
   }
+
+  echo "$BASE_PATH" > "$BASE_FILE"
 }
 
 do_cmd() {
@@ -128,9 +130,9 @@ check_bz_time() {
       END_TIME=$(date +"$TIME_FMT")
       DATE_ES=$(date +%s)
       USE_SEC=$(($DATE_ES - $DATE_SS))
-      print_log "START_TIME:$START_TIME" >> "$REPRO_LOG"
-      print_log "END_TIME:$END_TIME" >> "$REPRO_LOG"
-      print_log "Used $USE_SEC seconds to reproduce" >> "$REPRO_LOG"
+      print_log "START_TIME:$START_TIME" "$REPRO_LOG"
+      print_log "END_TIME:$END_TIME" "$REPRO_LOG"
+      print_log "Used $USE_SEC seconds to reproduce" "$REPRO_LOG"
 
       return 0
     fi
