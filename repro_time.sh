@@ -113,7 +113,7 @@ check_bz_time() {
   local i=1
 
   DATE_SS=$(date +%s)
-  for((i=1;i<=300;i++)); do
+  for((i=1;i<=3000;i++)); do
     sleep 5
     dmesg_info=$(cat $dmesg_file)
     [[ -n "$dmesg_info" ]] || {
