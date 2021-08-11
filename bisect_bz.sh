@@ -18,6 +18,9 @@ REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
+# reproduce time should be less or equal than 3600s in theory
+MAX_LOOP_TIME=720
+EVERY_LOOP_TIME=5
 BASE_PATH=$(pwd)
 echo $BASE_PATH > $PATH_FILE
 
@@ -231,22 +234,43 @@ repro_bz() {
 check_bz_result() {
   local bz_file=$1
   local dmesg_file=$2
+  local commit=$3
   local dmesg_info=""
   local cp_result=""
+  local i=1
 
   dmesg_info=$(cat $dmesg_file)
   [[ -n "$dmesg_info" ]] || {
-    print_err "dmesg info is null:$dmesg_info, could not judge!" "$BISECT_LOG"
+    print_err "$dmesg_file is null:$dmesg_info, could not judge!" "$BISECT_LOG"
+    clean_old_vm
     exit 1
   }
 
-  cp_result=$(cat $dmesg_file | grep -i "$POINT")
-  if [[ -z "$cp_result" ]]; then
-    print_log "$bz_file didn't contain $POINT:$cp_result in dmesg, pass" "$BISECT_LOG"
+  if [[ "$commit"== "$COMMIT" ]]; then
+    print_log "Need to check end commit $COMMIT reproduce time!"
+    for((i=1;i<=MAX_LOOP_TIME;i++)); do
+      sleep $EVERY_LOOP_TIME
+
+      cp_result=$(cat $dmesg_file | grep -i "$POINT")
+      if [[ -z "$cp_result" ]]; then
+        continue
+      else
+        print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
+        COMMIT_RESULT="$FAIL"
+        return 0
+      fi
+    done
     COMMIT_RESULT="$PASS"
+    print_log "$dmesg_file not reproduce this issue in 3600s:$bz_file!" "$BISECT_LOG"
   else
-    print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
-    COMMIT_RESULT="$FAIL"
+    cp_result=$(cat $dmesg_file | grep -i "$POINT")
+    if [[ -z "$cp_result" ]]; then
+      print_log "$bz_file didn't contain $POINT:$cp_result in dmesg, pass" "$BISECT_LOG"
+      COMMIT_RESULT="$PASS"
+    else
+      print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
+      COMMIT_RESULT="$FAIL"
+    fi
   fi
 }
 
@@ -277,7 +301,7 @@ test_bz() {
   repro_bz
   sleep "$TIME"
 
-  check_bz_result "$bz_file" "${DMESG_FOLDER}/${commit}_dmesg.log"
+  check_bz_result "$bz_file" "${DMESG_FOLDER}/${commit}_dmesg.log" "$commit"
 }
 
 test_commit() {
@@ -383,7 +407,7 @@ bisect_bz() {
 
 
 # Set detault value
-: "${TIME:=20}"
+: "${TIME:=15}"
 : "${NUM:=0}"
 : "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:n:r:h arg; do
