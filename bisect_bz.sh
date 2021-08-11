@@ -246,7 +246,7 @@ check_bz_result() {
     exit 1
   }
 
-  if [[ "$commit"== "$COMMIT" ]]; then
+  if [[ "$commit" == "$COMMIT" ]]; then
     print_log "Need to check end commit $COMMIT reproduce time!"
     for((i=1;i<=MAX_LOOP_TIME;i++)); do
       sleep $EVERY_LOOP_TIME
