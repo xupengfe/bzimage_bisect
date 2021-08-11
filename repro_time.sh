@@ -60,7 +60,7 @@ parm_check() {
     do_cmd "mkdir -p $REPRO_FOLDER"
   }
 
-  echo "$BASE_PATH" > "$BASE_FILE"
+  echo "$BASE_PATH" > "$PATH_FILE"
 }
 
 do_cmd() {
