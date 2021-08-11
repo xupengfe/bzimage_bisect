@@ -174,14 +174,14 @@ check_time() {
 
   time=$(echo "$result" | awk -F " " '{print $2}' | cut -d '.' -f 1)
   print_log "Found time:$time in $dmesg_file" "$BISECT_LOG"
-  if [[ "$time" -le 20 ]]; then
-    TIME=20
-  elif [[ "$time" -le 60 ]]; then
-    TIME=time
+  if [[ "$time" -le 25 ]]; then
+    TIME=$time
+  elif [[ "$time" -le 30 ]]; then
+    TIME=$((time+20))
   else
-    TIME=$((time+60))
+    TIME=$((time+120))
   fi
-  print_log "Set TIME:$TIME" "$BISECT_LOG"
+  print_log "Logic: |<25:time|25-30 +20|>30 + 120| Set TIME:$TIME" "$BISECT_LOG"
 }
 
 prepare_bz() {

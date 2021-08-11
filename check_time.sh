@@ -25,7 +25,7 @@ check_time() {
   if [[ "$time" -le 20 ]]; then
     TIME=20
   elif [[ "$time" -le 60 ]]; then
-    TIME=time
+    TIME=$time
   else
     TIME=$((time+60))
   fi
