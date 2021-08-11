@@ -153,6 +153,34 @@ bisect_prepare() {
   bisect_init
 }
 
+check_time() {
+  local dmesg_file=$1
+  local result=""
+  local time=""
+
+  [[ -e "$dmesg_file" ]] || {
+    print_err "dmesg_file:$dmesg_file is not exist, exit" "$BISECT_LOG"
+    exit 1
+  }
+
+  result=$(cat $dmesg_file | grep "$POINT" | head -n 1)
+  [[ -n "$result" ]] || {
+    print_err "No $POINT dmesg info:$result, exit" "$BISECT_LOG"
+    exit 1
+  }
+
+  time=$(echo "$result" | awk -F " " '{print $2}' | cut -d '.' -f 1)
+  print_log "Found time:$time in $dmesg_file" "$BISECT_LOG"
+  if [[ "$time" -le 20 ]]; then
+    TIME=20
+  elif [[ "$time" -le 60 ]]; then
+    TIME=time
+  else
+    TIME=$((time+60))
+  fi
+  print_log "Set TIME:$TIME" "$BISECT_LOG"
+}
+
 prepare_bz() {
   local commit=$1
 
@@ -290,6 +318,7 @@ bisect_bz() {
     clean_old_vm
     exit 1
   else
+    check_time "${DMESG_FOLDER}/${COMMIT}_dmesg.log"
     print_log "-END- commit $COMMIT FAIL $COMMIT_RESULT" "$BISECT_LOG"
   fi
 
