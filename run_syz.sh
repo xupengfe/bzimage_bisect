@@ -81,15 +81,24 @@ run_syzkaller() {
   ker_ori=$(cat $MY_CFG | grep "\"kernel_obj\"" | cut -d '"' -f 4)
   bz_ori=$(cat $MY_CFG | grep "\"kernel\"" | cut -d '"' -f 4)
 
-  ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
-  bz_ori=$(echo $bz_ori | sed s/'\/'/'\\\/'/g)
-  ker_tar=$(echo $KER_TARGET | sed s/'\/'/'\\\/'/g)
-  bzimage=$(echo $bzimage | sed s/'\/'/'\\\/'/g)
+  if [[ "$ker_ori" == "$KER_TARGET" ]]; then
+    print_log "ker_ori:$ker_ori is same as $KER_TARGET, no change"
+  else
+    ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
+    ker_tar=$(echo $KER_TARGET | sed s/'\/'/'\\\/'/g)
+    print_log "sed -i s/${ker_ori}/${ker_tar}/g $MY_CFG" "$RUNSYZ_LOG"
+    sed -i s/"${ker_ori}"/"${ker_tar}"/g $MY_CFG
+  fi
 
-  print_log "sed -i s/${ker_ori}/${ker_tar}/g $MY_CFG" "$RUNSYZ_LOG"
-  sed -i s/"${ker_ori}"/"${ker_tar}"/g $MY_CFG
-  print_log "sed -i s/${bz_ori}/${bzimage}/g $MY_CFG" "$RUNSYZ_LOG"
-  sed -i s/"${bz_ori}"/"${bzimage}"/g $MY_CFG
+  if [[ "$bz_ori" == "$bzimage" ]]; then
+    print_log "bz_ori:$bz_ori is same as $bzimage, no change"
+  else
+    bz_ori=$(echo $bz_ori | sed s/'\/'/'\\\/'/g)
+    bzimage=$(echo $bzimage | sed s/'\/'/'\\\/'/g)
+    print_log "sed -i s/${bz_ori}/${bzimage}/g $MY_CFG" "$RUNSYZ_LOG"
+    sed -i s/"${bz_ori}"/"${bzimage}"/g $MY_CFG
+  fi
+
   cat $MY_CFG
   cat $MY_CFG >> "$RUNSYZ_LOG"
 
