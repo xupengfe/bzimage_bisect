@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: GPL-2.0
 # Make the bzImage script
 
-set -e
-
 source "bisect_common.sh"
 
 KCONFIG_NAME="kconfig"
@@ -18,11 +16,12 @@ USE_SEC=""
 
 usage() {
   cat <<__EOF
-  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-c KCONFIG][-d DEST][-h]
+  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-c KCONFIG][-d DEST][-o][-h]
   -k  KERNEL source folder
   -m  COMMIT ID which will be used
   -c  Kconfig(optional) which will be used
   -d  Destination where bzImage will be copied
+  -o  Make kernel path(default is KERNEL_PATH /tmp/kernel)
   -h  show this
 __EOF
   exit 1
@@ -142,7 +141,7 @@ print_log "result:$result"
 if [[ "$result" == 1 ]]; then
   print_log "Get parm: KERNEL_SRC=$KERNEL_SRC COMMIT=$COMMIT DEST=$DEST"
 else
-  while getopts :k:m:c:d:h arg; do
+  while getopts :k:m:c:d:o:h arg; do
     case $arg in
       k)
         KERNEL_SRC=$OPTARG
@@ -155,6 +154,9 @@ else
         ;;
       d)
         DEST=$OPTARG
+        ;;
+      o)
+        KERNEL_PATH=$OPTARG
         ;;
       h)
         usage
