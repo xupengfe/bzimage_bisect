@@ -125,7 +125,7 @@ while getopts :k:t:d:i:h arg; do
       ;;
     t)
       TAG=$OPTARG
-      [[ -n "" ]] || {
+      [[ -n "$TAG" ]] || {
         print_err "TAG:$TAG is null, exit"
         usage
       }
