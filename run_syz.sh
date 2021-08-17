@@ -70,7 +70,7 @@ run_syzkaller() {
   }
   ker_ori=$(cat $MY_CFG | grep "\"kernel_obj\"" | cut -d '"' -f 4)
   bz_ori=$(cat $MY_CFG | grep "\"kernel\"" | cut -d '"' -f 4)
-  ker_tar=$(cat $KER_TARGET | grep "\"kernel\"" | cut -d '"' -f 4)
+  ker_tar=$(echo $KER_TARGET | grep "\"kernel\"" | cut -d '"' -f 4)
   ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
   bz_ori=$(echo $bz_ori | sed s/'\/'/'\\\/'/g)
 
