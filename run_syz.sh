@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Make the bzImage and run this bzImage in syzkaller fuzzy test
 
+export PATH=${PATH}:/root/bzimage_bisect
 source "bisect_common.sh"
 
 KERNEL_PATH="/tmp/syzkaller"
@@ -11,6 +12,7 @@ RUN_COMMIT=""
 IMAGE_FOLDER="/root/image"
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$(pwd)
+cd $BASE_PATH
 echo $BASE_PATH > $PATH_FILE
 
 usage() {
@@ -113,7 +115,7 @@ run_syz() {
   if [[ -e "${DEST}/bzImage_${RUN_COMMIT}" ]]; then
     print_log "${DEST}/bzImage_${RUN_COMMIT} exist, no need make" "$RUNSYZ_LOG"
   else
-    print_log "Make ${DEST}/bzImage_${RUN_COMMIT}, $KERNEL_SRC -> $KERNEL_PATH"
+    print_log "Make ${DEST}/bzImage_${RUN_COMMIT}, $KERNEL_SRC -> $KERNEL_PATH" "$RUNSYZ_LOG"
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$RUN_COMMIT" -d "$DEST" -o "$KERNEL_PATH"
   fi
 

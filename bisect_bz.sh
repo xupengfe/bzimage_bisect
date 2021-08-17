@@ -3,6 +3,7 @@
 # Bisect bzImage automation script, which need kconfig_kvm.sh & make_bz.sh
 # bs means bzImage
 
+export PATH=${PATH}:/root/bzimage_bisect
 source "bisect_common.sh"
 
 TIME_FMT="%m%d_%H%M%S"
