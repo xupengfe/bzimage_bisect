@@ -98,7 +98,7 @@ prepare_kernel() {
     do_cmd "mkdir -p $ker_path"
   }
 
-  make_num=$(cat $NUM_FILE)
+  [[ -e "$NUM_FILE" ]] && make_num=$(cat $NUM_FILE)
   KERNEL_TARGET_PATH="${ker_path}/${kernel_folder}"
   if [[ -d "$KERNEL_TARGET_PATH" ]]; then
     do_cmd "cd $KERNEL_TARGET_PATH"

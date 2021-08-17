@@ -59,6 +59,14 @@ prepare_kernel() {
   }
 }
 
+clean_old_syz() {
+  old_syz=""
+
+  old_syz=$(ps -ef |  grep syz-manager | grep config | awk -F " " '{print $2}')
+  print_log "Kill old syzkaller test:$old_syz"
+  do_cmd "kill -9 $old_syz"
+}
+
 run_syzkaller() {
   local ker_ori=""
   local bz_ori=""
@@ -85,6 +93,7 @@ run_syzkaller() {
   cat $MY_CFG
   cat $MY_CFG >> "$RUNSYZ_LOG"
 
+  clean_old_syz
   do_cmd "cd $IMAGE_FOLDER"
   do_cmd "syz-manager --config my.cfg"
 }

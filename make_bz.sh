@@ -103,7 +103,7 @@ make_bzimage() {
   # avoid adl make kernel failed
   ((cpu_num-=4))
   do_cmd "cd $KERNEL_TARGET_PATH"
-  print_log "make -j${cpu_num} bzImage" "$STATUS"
+  print_log "make -j1 bzImage" "$STATUS"
 
   # make -j more threads cause make bzImage failed, so used j1 #TODO for more
   print_log "make -j1 bzImage for $COMMIT" "$STATUS"
@@ -132,6 +132,8 @@ make_bzimage() {
     MAKE_RESULT=1
     print_err "FAIL: make bzImage_${COMMIT} fail" "$STATUS"
   fi
+
+  do_cmd "rm -rf $NUM_FILE"
 }
 
 result=0
