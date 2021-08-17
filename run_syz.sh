@@ -8,7 +8,8 @@ KERNEL_PATH="/tmp/syzkaller"
 KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
-MY_CFG="/root/image/my.cfg"
+IMAGE_FOLDER="/root/image"
+MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$(pwd)
 echo $BASE_PATH > $PATH_FILE
 
@@ -59,6 +60,7 @@ prepare_kernel() {
 run_syzkaller() {
   local ker_ori=""
   local bz_ori=""
+  local ker_tar=""
   local bzimage=""
 
   bzimage="${DEST}/bzImage_${RUN_COMMIT}"
@@ -66,17 +68,22 @@ run_syzkaller() {
     print_err "No $bzimage exist, exit" "$RUNSYZ_LOG"
     exit 1
   }
-  ker_ori=$(cat $MY_CFG  | grep "\"kernel_obj\"" | cut -d '"' -f 4)
-  bz_ori=$(cat $MY_CFG  | grep "\"kernel\"" | cut -d '"' -f 4)
-  ker_tar=""
+  ker_ori=$(cat $MY_CFG | grep "\"kernel_obj\"" | cut -d '"' -f 4)
+  bz_ori=$(cat $MY_CFG | grep "\"kernel\"" | cut -d '"' -f 4)
+  ker_tar=$(cat $KER_TARGET | grep "\"kernel\"" | cut -d '"' -f 4)
+  ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
+  bz_ori=$(echo $bz_ori | sed s/'\/'/'\\\/'/g)
 
-  print_log "sed -i s/"${ker_ori}"/"${KER_TARGET}"/g $MY_CFG" "$RUNSYZ_LOG"
-  sed -i s/"${ker_ori}"/"${KER_TARGET}"/g $MY_CFG
-  print_log "sed -i s/"${bz_ori}"/"${bzimage}"/g $MY_CFG" "$RUNSYZ_LOG"
+  bzimage=$(echo $bzimage | sed s/'\/'/'\\\/'/g)
+
+  print_log "sed -i s/${ker_ori}/${ker_tar}/g $MY_CFG" "$RUNSYZ_LOG"
+  sed -i s/"${ker_ori}"/"${ker_tar}"/g $MY_CFG
+  print_log "sed -i s/${bz_ori}/${bzimage}/g $MY_CFG" "$RUNSYZ_LOG"
   sed -i s/"${bz_ori}"/"${bzimage}"/g $MY_CFG
+  cat $MY_CFG
   cat $MY_CFG >> "$RUNSYZ_LOG"
 
-  do_cmd "cd /root/"
+  do_cmd "cd $IMAGE_FOLDER"
   do_cmd "syz-manager --config my.cfg"
 }
 
