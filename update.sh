@@ -6,5 +6,5 @@ RUNSYZ_FOLDER="/root/bzimage_bisect"
 UPDATE_LOG="/root/update_bzimage_bisect.log"
 
 cd "$RUNSYZ_FOLDER"
-date >> "$UPDATE_LOG"
+date +%Y-%m-%d_%H:%M:%S >> "$UPDATE_LOG"
 git pull >> "$UPDATE_LOG"
