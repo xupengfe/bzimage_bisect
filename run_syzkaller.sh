@@ -8,5 +8,5 @@ UPDATE_LOG="/root/update_bzimage_bisect.log"
 TAG=$1
 
 update.sh
-echo "run_syz.sh -t $tag" >> "$UPDATE_LOG"
+echo "run_syz.sh -t $TAG" >> "$UPDATE_LOG"
 run_syz.sh -t "$TAG"
