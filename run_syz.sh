@@ -9,9 +9,10 @@ KERNEL_PATH="/tmp/syzkaller"
 KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
+RUNSYZ_FOLDER="/root/bzimage_bisect"
 IMAGE_FOLDER="/root/image"
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
-BASE_PATH=$(pwd)
+BASE_PATH=$RUNSYZ_FOLDER
 cd $BASE_PATH
 echo $BASE_PATH > $PATH_FILE
 
