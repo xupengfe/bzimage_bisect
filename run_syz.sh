@@ -37,8 +37,7 @@ do_cmd() {
   eval "$cmd"
   result=$?
   if [[ $result -ne 0 ]]; then
-    print_log "$CMD FAIL. Return code is $RESULT"
-    print_log "$CMD FAIL. Return code is $RESULT" >> $RUNSYZ_LOG
+    print_log "$CMD FAIL. Return code is $result" "$RUNSYZ_LOG"
     exit $result
   fi
 }
@@ -64,8 +63,11 @@ clean_old_syz() {
   old_syz=""
 
   old_syz=$(ps -ef |  grep syz-manager | grep config | awk -F " " '{print $2}')
-  print_log "Kill old syzkaller test:$old_syz" "$RUNSYZ_LOG"
-  do_cmd "kill -9 $old_syz"
+
+  [[ -z "$old_syz" ]] || {
+    print_log "Kill old syzkaller:$old_syz" "$RUNSYZ_LOG"
+    do_cmd "kill -9 $old_syz"
+  }
 }
 
 run_syzkaller() {

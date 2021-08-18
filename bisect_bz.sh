@@ -62,8 +62,7 @@ do_cmd() {
   eval "$cmd"
   result=$?
   if [[ $result -ne 0 ]]; then
-    print_log "$CMD FAIL. Return code is $RESULT"
-    print_log "$CMD FAIL. Return code is $RESULT" >> $BISECT_LOG
+    print_log "$CMD FAIL. Return code is $RESULT" "$BISECT_LOG"
     git bisect log 2>/dev/null >> $BISECT_LOG
     clean_old_vm
     exit $result
