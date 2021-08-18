@@ -32,7 +32,7 @@ do_cmd() {
   local cmd=$*
   local result=""
 
-  print_log "CMD=$cmd"
+  print_log "CMD=$cmd" "$RUNSYZ_LOG"
 
   eval "$cmd"
   result=$?
@@ -62,12 +62,18 @@ prepare_kernel() {
 clean_old_syz() {
   old_syz=""
 
-  old_syz=$(ps -ef |  grep syz-manager | grep config | awk -F " " '{print $2}')
+  old_syz=$(ps -ef \
+            | grep syz-manager \
+            | grep config \
+            | awk -F " " '{print $2}'\
+            | head -n 1)
 
-  [[ -z "$old_syz" ]] || {
+  if [[ -z "$old_syz" ]]; then
+    print_log "No old syzkaller to clean"
+  else
     print_log "Kill old syzkaller:$old_syz" "$RUNSYZ_LOG"
     do_cmd "kill -9 $old_syz"
-  }
+  fi
 }
 
 run_syzkaller() {

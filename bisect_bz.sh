@@ -57,7 +57,7 @@ do_cmd() {
   local cmd=$*
   local result=""
 
-  print_log "CMD=$cmd"
+  print_log "CMD=$cmd" "$BISECT_LOG"
 
   eval "$cmd"
   result=$?

@@ -31,7 +31,7 @@ do_cmd() {
   local cmd=$*
   local result=""
 
-  print_log "CMD=$cmd"
+  print_log "CMD=$cmd" "$STATUS"
 
   eval "$cmd"
   result=$?
