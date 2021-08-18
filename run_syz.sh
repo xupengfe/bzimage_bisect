@@ -10,6 +10,7 @@ KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 IMAGE_FOLDER="/root/image"
+RUNSYZ_FOLDER="/root/bzimage_bisect"
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$(pwd)
 cd $BASE_PATH
@@ -63,7 +64,7 @@ clean_old_syz() {
   old_syz=""
 
   old_syz=$(ps -ef |  grep syz-manager | grep config | awk -F " " '{print $2}')
-  print_log "Kill old syzkaller test:$old_syz"
+  print_log "Kill old syzkaller test:$old_syz" "$RUNSYZ_LOG"
   do_cmd "kill -9 $old_syz"
 }
 
@@ -82,7 +83,7 @@ run_syzkaller() {
   bz_ori=$(cat $MY_CFG | grep "\"kernel\"" | cut -d '"' -f 4)
 
   if [[ "$ker_ori" == "$KER_TARGET" ]]; then
-    print_log "ker_ori:$ker_ori is same as $KER_TARGET, no change"
+    print_log "ker_ori:$ker_ori is same as $KER_TARGET, no change" "$RUNSYZ_LOG"
   else
     ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
     ker_tar=$(echo $KER_TARGET | sed s/'\/'/'\\\/'/g)
@@ -91,7 +92,7 @@ run_syzkaller() {
   fi
 
   if [[ "$bz_ori" == "$bzimage" ]]; then
-    print_log "bz_ori:$bz_ori is same as $bzimage, no change"
+    print_log "bz_ori:$bz_ori is same as $bzimage, no change" "$RUNSYZ_LOG"
   else
     bz_ori=$(echo $bz_ori | sed s/'\/'/'\\\/'/g)
     bzimage=$(echo $bzimage | sed s/'\/'/'\\\/'/g)
@@ -108,6 +109,9 @@ run_syzkaller() {
 }
 
 run_syz() {
+  cd $RUNSYZ_FOLDER
+  git pull
+
   [[ -e "$MY_CFG" ]] || {
     print_err "No $MY_CFG exist, exit"
     usage
