@@ -10,7 +10,6 @@ KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 IMAGE_FOLDER="/root/image"
-RUNSYZ_FOLDER="/root/bzimage_bisect"
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$(pwd)
 cd $BASE_PATH
@@ -117,9 +116,6 @@ run_syzkaller() {
 }
 
 run_syz() {
-  cd $RUNSYZ_FOLDER
-  git pull
-
   [[ -e "$MY_CFG" ]] || {
     print_err "No $MY_CFG exist, exit"
     usage
