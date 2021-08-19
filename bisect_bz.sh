@@ -3,7 +3,8 @@
 # Bisect bzImage automation script, which need kconfig_kvm.sh & make_bz.sh
 # bs means bzImage
 
-export PATH=${PATH}:/root/bzimage_bisect
+BISECT_SCRIPT_FOLDER="/root/bzimage_bisect"
+export PATH=${PATH}:$BISECT_SCRIPT_FOLDER
 source "bisect_common.sh"
 
 TIME_FMT="%m%d_%H%M%S"
@@ -22,7 +23,7 @@ REPRO_FILE="/root/repro.c"
 # reproduce time should be less or equal than 3600s in theory
 MAX_LOOP_TIME=720
 EVERY_LOOP_TIME=5
-BASE_PATH=$(pwd)
+BASE_PATH=$BISECT_SCRIPT_FOLDER
 echo $BASE_PATH > $PATH_FILE
 
 usage() {
