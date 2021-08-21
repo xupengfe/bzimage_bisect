@@ -70,24 +70,29 @@ fill_simple_line() {
   local file_latest=""
   local key_word=""
 
-  file_latest=$(ls -1 ${SYZ_FOLDER}/${one_hash}/${item_file}* | tail -n 1)
-  if [[ -z "$filter" ]]; then
-    content=$(cat $file_latest | tail -n 1)
+  file_latest=$(ls -1 ${SYZ_FOLDER}/${one_hash}/${item_file}* 2>/dev/null | tail -n 1)
+  if [[ -z "$file_latest" ]]; then
+    content=""
+    one_line="${one_line},${content}"
   else
-    content=$(cat $file_latest | grep "$filter" | tail -n 1)
-  fi
-  one_line="${one_line},${content}"
-  if [[ "$item_file" == "description" ]]; then
-
-    if [[ "$content" == *" in "* ]]; then
-      key_word=$(echo $content | awk -F " in " '{print $NF}')
-    elif [[ "$content" == *":"* ]]; then
-      key_word=$(echo $content | awk -F ":" '{print $NF}')
-    esle
-      print_log "WARN: description:$content no |:| or |in|! Fill all!"
-      key_word=$content
+    if [[ -z "$filter" ]]; then
+      content=$(cat $file_latest | tail -n 1)
+    else
+      content=$(cat $file_latest | grep "$filter" | tail -n 1)
     fi
-    one_line="${one_line},${key_word}"
+    one_line="${one_line},${content}"
+    if [[ "$item_file" == "description" ]]; then
+
+      if [[ "$content" == *" in "* ]]; then
+        key_word=$(echo $content | awk -F " in " '{print $NF}')
+      elif [[ "$content" == *":"* ]]; then
+        key_word=$(echo $content | awk -F ":" '{print $NF}')
+      esle
+        print_log "WARN: description:$content no |:| or |in|! Fill all!"
+        key_word=$content
+      fi
+      one_line="${one_line},${key_word}"
+    fi
   fi
   HASH_LINE=$one_line
   echo "$one_hash" "$HASH_LINE"
