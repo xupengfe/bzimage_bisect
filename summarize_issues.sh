@@ -81,7 +81,7 @@ fill_simple_line() {
 
     if [[ "$content" == *" in "* ]]; then
       key_word=$(echo $content | awk -F " in " '{print $NF}')
-    elif [[ "$content" == *":"*]]; then
+    elif [[ "$content" == *":"* ]]; then
       key_word=$(echo $content | awk -F ":" '{print $NF}')
     esle
       print_log "WARN: description:$content no |:| or |in|! Fill all!"
@@ -104,7 +104,7 @@ fill_c() {
   echo "$c_hash_line" >> $SUMMARY_C_CSV
 }
 
-fill_c() {
+fill_no_c() {
   local hash_one_no_c=$1
   local c_hash_line=""
   local c_header=""
@@ -122,7 +122,7 @@ summarize_no_c() {
   local hash_one_no_c=""
 
   for hash_one_no_c in $HASH_C; do
-    fill_c "$hash_one_no_c"
+    fill_no_c "$hash_one_no_c"
   done
 
 }
@@ -131,7 +131,7 @@ summarize_c() {
   local hash_one_c=""
 
   for hash_one_c in $HASH_C; do
-    fill_no_c "$hash_one_c"
+    fill_c "$hash_one_c"
   done
 }
 
