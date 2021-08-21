@@ -9,7 +9,7 @@ HASH_NO_C=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
 HOST=$(hostname)
 SUMMARIZE_LOG="/root/summarize_issues.log"
-SUMMARY_C_CSV="/root/summary_c_$IP_${HOST}.csv"
+SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
 SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 # Hard code SYZ_FOLDER, may be a variable value in the future
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
@@ -90,6 +90,7 @@ fill_simple_line() {
     one_line="${one_line},${key_word}"
   fi
   HASH_LINE=$one_line
+  echo "$one_hash" "$HASH_LINE"
 }
 
 fill_c() {
@@ -99,7 +100,7 @@ fill_c() {
   HASH_LINE=""
   HASH_LINE="$hash_one_c"
   c_header="HASH,description,key_word,kernel"
-  echo "c_header" > $SUMMARY_C_CSV
+  echo "$c_header" > $SUMMARY_C_CSV
   fill_simple_line "$hash_one_c" "description" "$HASH_LINE"
   fill_simple_line "$hash_one_c" "report" "$HASH_LINE" "\#"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
