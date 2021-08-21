@@ -100,12 +100,10 @@ fill_simple_line() {
 
 fill_c() {
   local hash_one_c=$1
-  local c_header=""
 
   HASH_LINE=""
   HASH_LINE="$hash_one_c"
-  c_header="HASH,description,key_word,kernel"
-  echo "$c_header" > $SUMMARY_C_CSV
+
   fill_simple_line "$hash_one_c" "description" "$HASH_LINE"
   fill_simple_line "$hash_one_c" "report" "$HASH_LINE" "\#"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
@@ -113,12 +111,10 @@ fill_c() {
 
 fill_no_c() {
   local hash_one_no_c=$1
-  local c_header=""
 
   HASH_LINE=""
   HASH_LINE="$hash_one_no_c"
-  c_header="HASH,description,key_word,kernel"
-  echo "$c_header" >> $SUMMARY_NO_C_CSV
+
   fill_simple_line "$hash_one_no_c" "description" "$HASH_LINE"
   fill_simple_line "$hash_one_no_c" "report" "$HASH_LINE" "\#"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
@@ -126,7 +122,10 @@ fill_no_c() {
 
 summarize_no_c() {
   local hash_one_no_c=""
+  local no_c_header=""
 
+  no_c_header="HASH,description,key_word,kernel"
+  echo "$no_c_header" > $SUMMARY_NO_C_CSV
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
   done
@@ -135,7 +134,10 @@ summarize_no_c() {
 
 summarize_c() {
   local hash_one_c=""
+  local c_header=""
 
+  c_header="HASH,description,key_word,kernel"
+  echo "$c_header" > $SUMMARY_C_CSV
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
   done
