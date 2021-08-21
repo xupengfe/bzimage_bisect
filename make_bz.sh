@@ -83,7 +83,7 @@ prepare_kconfig() {
   do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
   print_log "git checkout -f $COMMIT" "$STATUS"
   do_cmd "git checkout -f $COMMIT"
-  [[ -z "$bad_commit" ]] && {
+  [[ -z "$bad_commit" ]] || {
     print_log "There was bad commit:$bad_commit, will revert it" "$STATUS"
     do_cmd "git show $bad_commit | head -n 20"
     git revert -n $bad_commit
