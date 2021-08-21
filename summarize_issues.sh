@@ -9,12 +9,12 @@ HASH_NO_C=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
 HOST=$(hostname)
 SUMMARIZE_LOG="/root/summarize_issues.log"
-SUMMARY_C_CSV="/root/summary_c_$IP_$hostname.csv"
-SUMMARY_NO_C_CSV="/root/summary_no_c_$IP_$hostname.csv"
+SUMMARY_C_CSV="/root/summary_c_$IP_${HOST}.csv"
+SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 # Hard code SYZ_FOLDER, may be a variable value in the future
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 SYZ_REPRO_C="repro.cprog"
-
+HASH_LINE=""
 
 init_hash_issues() {
   local hash_all=""
@@ -89,39 +89,39 @@ fill_simple_line() {
     fi
     one_line="${one_line},${key_word}"
   fi
+  HASH_LINE=$one_line
 }
 
 fill_c() {
   local hash_one_c=$1
-  local c_hash_line=""
   local c_header=""
 
-  c_hash_line="$hash_one_c"
+  HASH_LINE=""
+  HASH_LINE="$hash_one_c"
   c_header="HASH,description,key_word,kernel"
-  echo "HASH,description,key_word,kernel" > $SUMMARY_C_CSV
-  fill_simple_line "$hash_one_c" "description" "$c_hash_line"
-  fill_simple_line "$hash_one_c" "report" "$c_hash_line" "\#"
-  echo "$c_hash_line" >> $SUMMARY_C_CSV
+  echo "c_header" > $SUMMARY_C_CSV
+  fill_simple_line "$hash_one_c" "description" "$HASH_LINE"
+  fill_simple_line "$hash_one_c" "report" "$HASH_LINE" "\#"
+  echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
 fill_no_c() {
   local hash_one_no_c=$1
-  local c_hash_line=""
   local c_header=""
 
-  no_c_hash_line="$hash_one_no_c"
+  HASH_LINE=""
+  HASH_LINE="$hash_one_no_c"
   c_header="HASH,description,key_word,kernel"
-  echo "HASH,description,key_word,kernel" >> $SUMMARY_C_CSV
-  fill_simple_line "$hash_one_no_c" "description" "$no_c_hash_line"
-  fill_simple_line "$hash_one_no_c" "report" "$no_c_hash_line" "\#"
-  echo "$no_c_hash_line" >> $SUMMARY_NO_C_CSV
+  echo "$c_header" >> $SUMMARY_NO_C_CSV
+  fill_simple_line "$hash_one_no_c" "description" "$HASH_LINE"
+  fill_simple_line "$hash_one_no_c" "report" "$HASH_LINE" "\#"
+  echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
-
 
 summarize_no_c() {
   local hash_one_no_c=""
 
-  for hash_one_no_c in $HASH_C; do
+  for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
   done
 
@@ -141,7 +141,5 @@ summarize_issues() {
   summarize_c
   summarize_no_c
 }
-
-
 
 summarize_issues
