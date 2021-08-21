@@ -197,8 +197,9 @@ prepare_bz() {
   }
 
   if [[ -e "${DEST}/bzImage_${commit}" ]]; then
-    print_log "${DEST}/bzImage_${commit} exist, no need make" "$BISECT_LOG"
+    print_log "|${DEST}/bzImage_${commit}| exist, no need make" "$BISECT_LOG"
   else
+    print_log "|${DEST}/bzImage_${commit}| was not exist, will make it" "$BISECT_LOG"
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST" -o "$KERNEL_PATH"
   fi
 
