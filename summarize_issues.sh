@@ -44,6 +44,7 @@ summarize_issues() {
         hash_no_c="$hash_no_c $hash_one"
       fi
       ((no_c_num+=1))
+    fi
   done
 
   check_num=$((no_c_num+c_num))
