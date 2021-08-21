@@ -99,7 +99,7 @@ prepare_kconfig() {
 }
 
 make_bzimage() {
-  local kernel_target_folder=""
+  local kernel_target_folder=$1
   local cpu_num=""
   local tmp_size=""
   local tmp_g=""

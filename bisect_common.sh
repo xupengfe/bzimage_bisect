@@ -118,11 +118,11 @@ prepare_kernel() {
     print_log "cd $KERNEL_TARGET_PATH" "$log_file"
     do_common_cmd "cd $KERNEL_TARGET_PATH"
 
-    ret=$(git log "$commit" 2>/dev/null | head -n 1)
+    ret=$(git show "$commit" 2>/dev/null | head -n 1)
     if [[ -n "$ret" ]]; then
       print_log "git check $commit pass, no need copy $ker_src again" "$log_file"
     else
-      print_log "No $commit exist:$ret, will copy $ker_src" "$log_file"
+      print_log "No $commit commit exist:$ret, will copy $ker_src" "$log_file"
       copy_kernel "$ker_src" "$ker_path" "$log_file"
     fi
   else
