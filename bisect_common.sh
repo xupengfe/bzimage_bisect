@@ -4,7 +4,7 @@ readonly PASS="good"
 readonly FAIL="bad"
 readonly SKIP="skip"
 
-KERNEL_PATH="/tmp/kernel"
+readonly KERNEL_PATH="/tmp/kernel"
 PATH_FILE="/tmp/base_path"
 [[ -e "$PATH_FILE" ]] && BASE_PATH=$(cat $PATH_FILE)
 TIME_FMT="%m%d_%H%M%S"

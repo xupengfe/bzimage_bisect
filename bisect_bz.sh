@@ -20,6 +20,7 @@ REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
+BAD_COMMIT=""
 # reproduce time should be less or equal than 3600s in theory
 MAX_LOOP_TIME=720
 EVERY_LOOP_TIME=5
@@ -196,7 +197,7 @@ prepare_bz() {
   if [[ -e "${DEST}/bzImage_${commit}" ]]; then
     print_log "${DEST}/bzImage_${commit} exist, no need make" "$BISECT_LOG"
   else
-    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST"
+    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST" -o "$KERNEL_PATH"
   fi
 
   [[ "$MAKE_RESULT" -eq 0 ]] || {
@@ -208,6 +209,29 @@ prepare_bz() {
       print_err "START ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
       exit 1
     fi
+  }
+}
+
+prepare_revert_bz() {
+  local end_commit=$1
+  local bad_commit=$2
+  local bzimage=$3
+
+  [[ -n "$end_commit" ]] || {
+    print_err "prepare bz commit is null:$end_commit" "$BISECT_LOG"
+    exit 1
+  }
+
+  if [[ -e "$bzimage" ]]; then
+    print_log "$bzimage exist, no need make" "$BISECT_LOG"
+  else
+    print_log "${BASE_PATH}/make_bz.sh -k $KERNEL_SRC -m $end_commit -b $bad_commit -d $DEST -o $KERNEL_PATH -f $bzimage" "$BISECT_LOG"
+    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$end_commit" -b "$bad_commit" -d "$DEST" -o "$KERNEL_PATH" -f "$bzimage"
+  fi
+
+  [[ "$MAKE_RESULT" -eq 0 ]] || {
+    print_err "Make $end_commit $bad_commit $bzimage failed, exit" "$BISECT_LOG"
+    exit 1
   }
 }
 
@@ -314,6 +338,7 @@ test_commit() {
     test_bz "${DEST}/bzImage_${commit}" "$commit"
     if [[ -z "$COMMIT_RESULT" ]]; then
       print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+      clean_old_vm
       exit 1
     fi
   else
@@ -385,7 +410,13 @@ bisect_bz() {
       print_log "Bisect PASS: find $bisect_end" "$BISECT_LOG"
       do_cmd "git bisect log >> $BI_LOG"
       do_cmd "git bisect log >> $BISECT_LOG"
-      exit 0
+      BAD_COMMIT=$(echo "$bisect_end" \
+                  | grep "first bad" \
+                  | tail -n 1 \
+                  | cut -d "[" -f 2 \
+                  | cut -d "]" -f 1)
+
+      return 0
     }
     steps=$(echo "$bisect_info" | grep step)
     [[ -n "$steps" ]] \
@@ -406,6 +437,34 @@ bisect_bz() {
   done
 }
 
+verify_bad_commit() {
+  local revert_bz=""
+  local commit_revert=""
+
+  commit_revert="${COMMIT}_${BAD_COMMIT}_revert"
+  revert_bz="${DEST}/bzImage_${commit_revert}"
+  prepare_revert_bz "$COMMIT" "$BAD_COMMIT" "$revert_bz"
+
+  if [[ "$MAKE_RESULT" -eq 0 ]]; then
+    test_bz "$revert_bz" "$commit_revert"
+    print_log "$commit_revert $COMMIT_RESULT" "$BI_LOG"
+    if [[ -z "$COMMIT_RESULT" ]]; then
+      print_err "After test $commit_revert, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+    elif [[ "$COMMIT_RESULT" == "$PASS" ]]; then
+      print_log "Bisect successfully! $commit_revert bzimage passed!" "$BISECT_LOG"
+      print_log "Bisect successfully! $commit_revert bzimage passed!" "$BI_LOG"
+    elif [[ "$COMMIT_RESULT" == "$FAIL" ]]; then
+      print_err "Bisect failed! $commit_revert bzimage failed!" "$BISECT_LOG"
+      print_err "Bisect failed! $commit_revert bzimage failed!" "$BI_LOG"
+    else
+      print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BISECT_LOG"
+      print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BI_LOG"
+    fi
+  else
+    print_err "Make $revert_bz failed, please check ${DEST}/${BZ_LOG}"
+  fi
+  clean_old_vm
+}
 
 # Set detault value
 : "${TIME:=15}"
@@ -454,6 +513,7 @@ main() {
   parm_check
   bisect_prepare
   bisect_bz
+  verify_bad_commit
 }
 
 main

@@ -5,8 +5,8 @@
 export PATH=${PATH}:/root/bzimage_bisect
 source "bisect_common.sh"
 
-KERNEL_PATH="/tmp/syzkaller"
-KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
+RUN_KERNEL_PATH="/tmp/syzkaller"
+RUN_KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 RUNSYZ_FOLDER="/root/bzimage_bisect"
@@ -90,11 +90,11 @@ run_syzkaller() {
   ker_ori=$(cat $MY_CFG | grep "\"kernel_obj\"" | cut -d '"' -f 4)
   bz_ori=$(cat $MY_CFG | grep "\"kernel\"" | cut -d '"' -f 4)
 
-  if [[ "$ker_ori" == "$KER_TARGET" ]]; then
-    print_log "ker_ori:$ker_ori is same as $KER_TARGET, no change" "$RUNSYZ_LOG"
+  if [[ "$ker_ori" == "$RUN_KER_TARGET" ]]; then
+    print_log "ker_ori:$ker_ori is same as $RUN_KER_TARGET, no change" "$RUNSYZ_LOG"
   else
     ker_ori=$(echo $ker_ori | sed s/'\/'/'\\\/'/g)
-    ker_tar=$(echo $KER_TARGET | sed s/'\/'/'\\\/'/g)
+    ker_tar=$(echo $RUN_KER_TARGET | sed s/'\/'/'\\\/'/g)
     print_log "sed -i s/${ker_ori}/${ker_tar}/g $MY_CFG" "$RUNSYZ_LOG"
     sed -i s/"${ker_ori}"/"${ker_tar}"/g $MY_CFG
   fi
@@ -142,8 +142,8 @@ run_syz() {
   if [[ -e "${DEST}/bzImage_${RUN_COMMIT}" ]]; then
     print_log "${DEST}/bzImage_${RUN_COMMIT} exist, no need make" "$RUNSYZ_LOG"
   else
-    print_log "Make ${DEST}/bzImage_${RUN_COMMIT}, $KERNEL_SRC -> $KERNEL_PATH" "$RUNSYZ_LOG"
-    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$RUN_COMMIT" -d "$DEST" -o "$KERNEL_PATH"
+    print_log "Make ${DEST}/bzImage_${RUN_COMMIT}, $KERNEL_SRC -> $RUN_KERNEL_PATH" "$RUNSYZ_LOG"
+    ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$RUN_COMMIT" -d "$DEST" -o "$RUN_KERNEL_PATH"
   fi
 
   run_syzkaller
