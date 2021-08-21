@@ -304,12 +304,14 @@ check_bz_result() {
 test_bz() {
   local bz_file=$1
   local commit=$2
+  local check_bz=""
 
   clean_old_vm
-  [[ -e "$bz_file" ]] || {
-    print_err "bzImage:$bz_file does not exist" "$BISECT_LOG"
+  check_bz=$(ls "$bz_file" 2>/dev/null)
+  if [[ -z "$check_bz" ]]; then
+    print_err "bzImage:$bz_file does not exist:$check_bz" "$BISECT_LOG"
     exit 1
-  }
+  fi
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
   qemu-system-x86_64 \
     -m 2G \
