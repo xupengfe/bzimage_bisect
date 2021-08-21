@@ -22,7 +22,7 @@ summarize_issues() {
   local check_num=""
   local no_c_num=0
 
-  [[ -d "$SYZ_FOLDER" ]] {
+  [[ -d "$SYZ_FOLDER" ]] || {
     print_err "$SYZ_FOLDER does not exist, exit!" "$SUMMARIZE_LOG"
     exit 1
   }
