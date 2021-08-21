@@ -17,6 +17,20 @@ NEXT_COMMIT=""
 BI_LOG=""
 MAKE_RESULT=""
 
+do_common_cmd() {
+  local cmd=$*
+  local result=""
+
+  echo "CMD=$cmd"
+
+  eval "$cmd"
+  result=$?
+  if [[ $result -ne 0 ]]; then
+    echo "$CMD FAIL. Return code is $result"
+    exit $result
+  fi
+}
+
 print_log(){
   local log_info=$1
   local log_file=$2
@@ -49,8 +63,8 @@ copy_kernel() {
   }
 
   [[ -d "$ker_path" ]] || {
-    do_cmd "rm -rf $ker_path"
-    do_cmd "mkdir -p $ker_path"
+    do_common_cmd "rm -rf $ker_path"
+    do_common_cmd "mkdir -p $ker_path"
   }
 
   kernel_folder=$(echo $KERNEL_SRC | awk -F "/" '{print $NF}')
@@ -64,8 +78,8 @@ copy_kernel() {
 
   ker_tar_path="${ker_path}/${kernel_folder}"
 
-  do_cmd "rm -rf $ker_tar_path"
-  do_cmd "cp -rf $ker_src $ker_path"
+  do_common_cmd "rm -rf $ker_tar_path"
+  do_common_cmd "cp -rf $ker_src $ker_path"
 }
 
 prepare_kernel() {
@@ -94,14 +108,15 @@ prepare_kernel() {
   }
 
   [[ -d "$ker_path" ]] || {
-    do_cmd "rm -rf $ker_path"
-    do_cmd "mkdir -p $ker_path"
+    do_common_cmd "rm -rf $ker_path"
+    do_common_cmd "mkdir -p $ker_path"
   }
 
   [[ -e "$NUM_FILE" ]] && make_num=$(cat $NUM_FILE)
   KERNEL_TARGET_PATH="${ker_path}/${kernel_folder}"
   if [[ -d "$KERNEL_TARGET_PATH" ]]; then
-    do_cmd "cd $KERNEL_TARGET_PATH"
+    print_log "cd $KERNEL_TARGET_PATH" "$log_file"
+    do_common_cmd "cd $KERNEL_TARGET_PATH"
 
     ret=$(git log "$commit" 2>/dev/null | head -n 1)
     if [[ -n "$ret" ]]; then
@@ -119,11 +134,11 @@ prepare_kernel() {
   if [[ "$make_num" -eq 0 ]]; then
     print_log "First time make bzImage, copy and clean it" "$log_file"
     copy_kernel "$ker_src" "$ker_path" "$log_file"
-    do_cmd "cd $KERNEL_TARGET_PATH"
-    do_cmd "make distclean"
-    do_cmd "git clean -fdx"
+    do_common_cmd "cd $KERNEL_TARGET_PATH"
+    do_common_cmd "make distclean"
+    do_common_cmd "git clean -fdx"
   fi
   ((make_num+=1))
   print_log "make_num:$make_num" "$log_file"
-  do_cmd "echo $make_num > $NUM_FILE"
+  do_common_cmd "echo $make_num > $NUM_FILE"
 }

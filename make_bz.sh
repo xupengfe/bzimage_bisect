@@ -38,7 +38,7 @@ do_cmd() {
   eval "$cmd"
   result=$?
   if [[ $result -ne 0 ]]; then
-    print_log "$CMD FAIL. Return code is $RESULT" "$STATUS"
+    print_log "$CMD FAIL. Return code is $result" "$STATUS"
     exit $result
   fi
 }

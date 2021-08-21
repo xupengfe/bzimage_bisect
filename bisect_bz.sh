@@ -64,7 +64,7 @@ do_cmd() {
   eval "$cmd"
   result=$?
   if [[ $result -ne 0 ]]; then
-    print_log "$CMD FAIL. Return code is $RESULT" "$BISECT_LOG"
+    print_log "$CMD FAIL. Return code is $result" "$BISECT_LOG"
     git bisect log 2>/dev/null >> $BISECT_LOG
     clean_old_vm
     exit $result
@@ -146,8 +146,10 @@ bisect_init() {
   local old_bisect=""
 
   old_bisect=$(git bisect log 2>/dev/null)
-  print_log "There was old bisect log:$old_bisect, will clean it" "$BISECT_LOG"
-  do_cmd "git bisect reset"
+  [[ -z "$old_bisect" ]] || {
+    print_log "There was old bisect log:$old_bisect, will clean it" "$BISECT_LOG"
+    do_cmd "git bisect reset"
+  }
   do_cmd "git checkout -f $COMMIT"
 }
 
