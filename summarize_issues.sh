@@ -87,7 +87,7 @@ fill_simple_line() {
         key_word=$(echo $content | awk -F " in " '{print $NF}')
       elif [[ "$content" == *":"* ]]; then
         key_word=$(echo $content | awk -F ":" '{print $NF}')
-      esle
+      else
         print_log "WARN: description:$content no |:| or |in|! Fill all!"
         key_word=$content
       fi
