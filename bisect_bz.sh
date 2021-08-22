@@ -183,9 +183,9 @@ check_time() {
   elif [[ "$time" -le 30 ]]; then
     TIME=$((time+20))
   else
-    TIME=$((time+120))
+    TIME=$((time+360))
   fi
-  print_log "Logic: |<25:time|25-30 +20|>30 + 120| Set TIME:$TIME" "$BISECT_LOG"
+  print_log "Logic: |<25:time|25-30 +20|>30 + 360| Set TIME:$TIME" "$BISECT_LOG"
 }
 
 prepare_bz() {
