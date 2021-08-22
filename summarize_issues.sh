@@ -61,7 +61,7 @@ init_hash_issues() {
   print_log "---->  No_c:$HASH_NO_C" "$SUMMARIZE_LOG"
 }
 
-fill_simple_line() {
+fill_line() {
   local one_hash=$1
   local item_file=$2
   local des_content=""
