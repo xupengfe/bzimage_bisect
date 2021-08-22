@@ -108,6 +108,7 @@ prepare_kconfig() {
 
   do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
   do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
+  do_cmd "cat .config | grep CONFIG_LOCALVERSION"
   do_cmd "make olddefconfig"
 }
 
