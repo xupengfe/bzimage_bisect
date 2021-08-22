@@ -93,7 +93,7 @@ fill_line() {
     key_word)
       key_content=""
       if [[ "$DES_CONTENT" == *" in "* ]]; then
-        key_content=$(echo $des_content | awk -F " in " '{print $NF}')
+        key_content=$(echo $DES_CONTENT | awk -F " in " '{print $NF}')
       elif [[ "$DES_CONTENT" == *":"* ]]; then
         key_content=$(echo $DES_CONTENT | awk -F ":" '{print $NF}')
       else
