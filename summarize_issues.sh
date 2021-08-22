@@ -87,7 +87,7 @@ fill_line() {
       [[ -z "$des_latest" ]] \
         && print_err "des_content is null:$des_content in ${SYZ_FOLDER}/${one_hash}/${item_file}" "$SUMMARIZE_LOG"
 
-      DES_CONTENT=des_content
+      DES_CONTENT=$des_content
       HASH_LINE="${HASH_LINE},${des_content}"
       ;;
     key_word)
