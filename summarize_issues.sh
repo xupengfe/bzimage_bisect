@@ -15,6 +15,8 @@ SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 SYZ_REPRO_C="repro.cprog"
 HASH_LINE=""
+DES_CONTENT=""
+FKER_CONTENT=""
 
 init_hash_issues() {
   local hash_all=""
@@ -85,17 +87,18 @@ fill_line() {
       [[ -z "$des_latest" ]] \
         && print_err "des_content is null:$des_content in ${SYZ_FOLDER}/${one_hash}/${item_file}" "$SUMMARIZE_LOG"
 
+      DES_CONTENT=des_content
       HASH_LINE="${HASH_LINE},${des_content}"
       ;;
     key_word)
       key_content=""
-      if [[ "$des_content" == *" in "* ]]; then
+      if [[ "$DES_CONTENT" == *" in "* ]]; then
         key_content=$(echo $des_content | awk -F " in " '{print $NF}')
-      elif [[ "$des_content" == *":"* ]]; then
-        key_content=$(echo $des_content | awk -F ":" '{print $NF}')
+      elif [[ "$DES_CONTENT" == *":"* ]]; then
+        key_content=$(echo $DES_CONTENT | awk -F ":" '{print $NF}')
       else
-        print_log "WARN: description:$des_content no |:| or |in|! Fill all!"
-        key_content=$des_content
+        print_log "WARN: description:$DES_CONTENT no |:| or |in|! Fill all!"
+        key_content=$DES_CONTENT
       fi
       HASH_LINE="${HASH_LINE},${key_content}"
       ;;
@@ -112,6 +115,7 @@ fill_line() {
         fker_content=$(cat machineInfo0 | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}')
         fker_content="No repro.log fill $fker_content"
       }
+      FKER_CONTENT=fker_content
       HASH_LINE="${HASH_LINE},${fker_content}"
       ;;
     new_kernels)
@@ -122,8 +126,8 @@ fill_line() {
       [[ -z "$nkers_content" ]] && {
         nmac_info=$(ls -ltra machineInfo* 2>/dev/null | awk -F " " '{print $NF}' | tail -n 1)
         [[ -z "$nmac_info" ]] && {
-          print_log "No ${one_hash/machineInfo} fill $fker_content"
-          HASH_LINE="${HASH_LINE},|No machineInfo fill ${fker_content}|"
+          print_log "No ${one_hash/machineInfo} fill $FKER_CONTENT"
+          HASH_LINE="${HASH_LINE},|No machineInfo fill ${FKER_CONTENT}|"
           return 0
         }
         nkers_content=$(cat $nmac_info | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}' | uniq)
@@ -131,7 +135,7 @@ fill_line() {
 
       # nkers_content may be several kernels with enter, maybe same, solve them
       for nker in $nkers_content; do
-        [[ "$nkers" == *"$ker"* ]] && continue
+        [[ "$nkers" == *"$nker"* ]] && continue
         nkers="${nkers}|${nker}"
       done
         nkers="${nkers}|"
