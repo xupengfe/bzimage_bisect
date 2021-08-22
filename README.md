@@ -16,3 +16,9 @@ commit 9f4ad9e425a1d3b6a34617b8ea226d56a119a717 (tag: v5.12)
 commit 62fb9874f5da54fdb243003b386128037319b219 (tag: v5.13)
 
 ./repro_time.sh -b /home/bzimage/bzImage_eb8b4dd9b2ff8e9dcad191bf178b3c975ab9f702 -p "kernel BUG" -i /root/image/stretch2.img -r "/root/syzkaller/workdir/crashes/d4d317dc0ede25fe095dc6dcfa9e6a6600e4efd8/repro.cprog"
+
+
+# debug for make_bz.sh revert commit
+/home/code/bzimage_bisect/make_bz.sh -k /root/os.linux.intelnext.kernel -m eb8b4dd9b2ff8e9dcad191bf178b3c975ab9f702  -b 0e0d00d9ecc57f9886b3784e12a71752035b188f -d /home/bzimage -o /tmp/kernel -f /home/bzimage/bzImage_eb8b4dd9b2ff8e9dcad191bf178b3c975ab9f702_0e0d00d9ecc57f9886b3784e12a71752035b188f_rever
+
+
