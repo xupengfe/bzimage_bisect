@@ -51,72 +51,127 @@ init_hash_issues() {
 
   check_num=$((no_c_num+c_num))
 
-  print_log "check:$check_num, all:$all_num, c:$c_num, no_c:$no_c_num"
+  print_log "check:$check_num, all:$all_num, c:$c_num, no_c:$no_c_num" "$SUMMARIZE_LOG"
   [[ "$check_num" -eq "$all_num" ]] || {
-    print_err "check_num:$check_num is not equal to $all_num"    
+    print_err "check_num:$check_num is not equal to $all_num" "$SUMMARIZE_LOG"
   }
 
-  print_log "---->  c: $HASH_C"
+  print_log "---->  c: $HASH_C" "$SUMMARIZE_LOG"
 
-  print_log "---->  No_c:$HASH_NO_C"
+  print_log "---->  No_c:$HASH_NO_C" "$SUMMARIZE_LOG"
 }
 
 fill_simple_line() {
   local one_hash=$1
   local item_file=$2
-  local one_line=$3
-  local filter=$4
-  local content=""
-  local file_latest=""
-  local key_word=""
+  local des_content=""
+  local key_content=""
+  local fker_content=""
+  local nkers_content=""
+  local nmac_info=""
+  local nker=""
+  local nkers=""
 
-  file_latest=$(ls -1 ${SYZ_FOLDER}/${one_hash}/${item_file}* 2>/dev/null | tail -n 1)
-  if [[ -z "$file_latest" ]]; then
-    content="No $item_file"
-    one_line="${one_line},${content}"
-  else
-    if [[ -z "$filter" ]]; then
-      content=$(cat $file_latest | tail -n 1)
-    else
-      content=$(cat $file_latest | grep "$filter" | tail -n 1)
-    fi
-    one_line="${one_line},${content}"
-    if [[ "$item_file" == "description" ]]; then
+  case $item_file  in
+    description)
+      des_latest=""
+      des_content=""
+      des_latest=$(ls -1 ${SYZ_FOLDER}/${one_hash}/${item_file}* 2>/dev/null | tail -n 1)
+      [[ -z "$des_latest" ]] && {
+        print_err "des_latest is null:$des_latest in ${SYZ_FOLDER}/${one_hash}/${item_file}" "$SUMMARIZE_LOG"
+        exit 1
+      }
+      des_content=$(cat $des_latest | tail -n 1)
+      [[ -z "$des_latest" ]] \
+        && print_err "des_content is null:$des_content in ${SYZ_FOLDER}/${one_hash}/${item_file}" "$SUMMARIZE_LOG"
 
-      if [[ "$content" == *" in "* ]]; then
-        key_word=$(echo $content | awk -F " in " '{print $NF}')
-      elif [[ "$content" == *":"* ]]; then
-        key_word=$(echo $content | awk -F ":" '{print $NF}')
+      HASH_LINE="${HASH_LINE},${des_content}"
+      ;;
+    key_word)
+      key_content=""
+      if [[ "$des_content" == *" in "* ]]; then
+        key_content=$(echo $des_content | awk -F " in " '{print $NF}')
+      elif [[ "$des_content" == *":"* ]]; then
+        key_content=$(echo $des_content | awk -F ":" '{print $NF}')
       else
-        print_log "WARN: description:$content no |:| or |in|! Fill all!"
-        key_word=$content
+        print_log "WARN: description:$des_content no |:| or |in|! Fill all!"
+        key_content=$des_content
       fi
-      one_line="${one_line},${key_word}"
-    fi
-  fi
-  HASH_LINE=$one_line
-  echo "$one_hash" "$HASH_LINE"
+      HASH_LINE="${HASH_LINE},${key_content}"
+      ;;
+    first_kernel)
+      fker_content=""
+      fker_content=$(grep "PID:" repro.log* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
+
+      [[ -z "$fker_content" ]] && {
+        [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] || {
+          print_err "${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exit" "$SUMMARIZE_LOG"
+          exit 1
+        }
+        fker_content=$(cat machineInfo0 | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}')
+        fker_content="No repro.log fill $fker_content"
+      }
+      HASH_LINE="${HASH_LINE},${fker_content}"
+      ;;
+    new_kernels)
+      nkers_content=""
+      nkers=""
+      nkers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
+
+      [[ -z "$nkers_content" ]] && {
+        nmac_info=$(ls -ltra machineInfo* | awk -F " " '{print $NF}' | tail -n 1)
+        [[ -e "${SYZ_FOLDER}/${one_hash}/${nmac_info}" ]] || {
+          print_err "${SYZ_FOLDER}/${one_hash}/${nmac_info} does not exit" "$SUMMARIZE_LOG"
+          exit 1
+        }
+        nkers_content=$(cat $nmac_info | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}' | uniq)
+      }
+
+      # nkers_content may be several kernels with enter, maybe same, solve them
+      for nker in $nkers_content; do
+        [[ "$nkers" == *"$ker"* ]] && continue
+        nkers="${nkers}|${nker}"
+      done
+        nkers="${nkers}|"
+      HASH_LINE="${HASH_LINE},${nkers}"
+      ;;
+    *)
+      print_err "invalid $item_file!!! Ignore" "$SUMMARIZE_LOG"
+      ;;
+  esac
+
+  print_log "$HASH_LINE" "$SUMMARIZE_LOG"
 }
 
 fill_c() {
   local hash_one_c=$1
 
+  # init HASH_LINE in each loop
   HASH_LINE=""
   HASH_LINE="$hash_one_c"
 
-  fill_simple_line "$hash_one_c" "description" "$HASH_LINE"
-  fill_simple_line "$hash_one_c" "report" "$HASH_LINE" "\#"
+  cd ${SYZ_FOLDER}/${hash_one_c}
+  fill_line "$hash_one_c" "description"
+  fill_line "$hash_one_c" "key_word"
+  fill_line "$hash_one_c" "first_kernel"
+  fill_line "$hash_one_c" "new_kernels"
+
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
 fill_no_c() {
   local hash_one_no_c=$1
 
+  # init HASH_LINE in each loop
   HASH_LINE=""
   HASH_LINE="$hash_one_no_c"
 
-  fill_simple_line "$hash_one_no_c" "description" "$HASH_LINE"
-  fill_simple_line "$hash_one_no_c" "report" "$HASH_LINE" "\#"
+  cd ${SYZ_FOLDER}/${hash_one_no_c}
+  fill_line "$hash_one_no_c" "description"
+  fill_line "$hash_one_no_c" "key_word"
+  fill_line "$hash_one_no_c" "first_kernel"
+  fill_line "$hash_one_no_c" "new_kernels"
+
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -124,7 +179,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,kernel"
+  no_c_header="HASH,description,key_word,first_kernel,new_kernels"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
@@ -136,7 +191,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,kernel"
+  c_header="HASH,description,key_word,first_kernel,new_kernels"
   echo "$c_header" > $SUMMARY_C_CSV
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
