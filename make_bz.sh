@@ -71,6 +71,7 @@ prepare_kconfig() {
   local kernel_target_folder=$1
   local bad_commit=$2
   local commit_short=""
+  local bad_commit_short=""
   local revert_status=""
 
   do_cmd "cd $kernel_target_folder"
@@ -83,7 +84,7 @@ prepare_kconfig() {
   do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
   print_log "git checkout -f $COMMIT" "$STATUS"
   do_cmd "git checkout -f $COMMIT"
-  [[ -z "$bad_commit" ]] || {
+  if [[ -z "$bad_commit" ]]; then
     print_log "There was bad commit:$bad_commit, will revert it" "$STATUS"
     do_cmd "git show $bad_commit | head -n 20"
     git revert -n $bad_commit
@@ -93,7 +94,19 @@ prepare_kconfig() {
     }
     revert_status=$(git status)
     print_log "revert status: $revert_status" "$STATUS"
-  }
+
+    # there is bad commit, will change name to commit-badcommit-revert
+    commit_short=$(echo ${COMMIT:0:12})
+    bad_commit_short=$(echo ${bad_commit:0:12})
+    commit_short="${commit_short}-${bad_commit_short}-revert"
+    print_log "commit revert:$commit_short"
+  else
+    # no bad commit revert, will use commit 0:12
+    commit_short=$(echo ${COMMIT:0:12})
+    print_log "commit 0-12:$commit_short"
+  fi
+
+  do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
 
   do_cmd "make olddefconfig"
 }
