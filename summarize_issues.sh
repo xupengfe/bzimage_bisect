@@ -105,8 +105,9 @@ fill_line() {
 
       [[ -z "$fker_content" ]] && {
         [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] || {
-          print_err "${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exit" "$SUMMARIZE_LOG"
-          exit 1
+          print_err "${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist" "$SUMMARIZE_LOG"
+          HASH_LINE="${HASH_LINE},No repro.log and machineInfo0 NULL"
+          return 0
         }
         fker_content=$(cat machineInfo0 | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}')
         fker_content="No repro.log fill $fker_content"
@@ -119,10 +120,11 @@ fill_line() {
       nkers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
 
       [[ -z "$nkers_content" ]] && {
-        nmac_info=$(ls -ltra machineInfo* | awk -F " " '{print $NF}' | tail -n 1)
-        [[ -e "${SYZ_FOLDER}/${one_hash}/${nmac_info}" ]] || {
-          print_err "${SYZ_FOLDER}/${one_hash}/${nmac_info} does not exit" "$SUMMARIZE_LOG"
-          exit 1
+        nmac_info=$(ls -ltra machineInfo* 2>/dev/null | awk -F " " '{print $NF}' | tail -n 1)
+        [[ -z "$nmac_info" ]] && {
+          print_log "No ${one_hash/machineInfo} fill $fker_content"
+          HASH_LINE="${HASH_LINE},|No machineInfo fill ${fker_content}|"
+          return 0
         }
         nkers_content=$(cat $nmac_info | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}' | uniq)
       }
