@@ -72,7 +72,7 @@ fill_simple_line() {
 
   file_latest=$(ls -1 ${SYZ_FOLDER}/${one_hash}/${item_file}* 2>/dev/null | tail -n 1)
   if [[ -z "$file_latest" ]]; then
-    content=""
+    content="No $item_file"
     one_line="${one_line},${content}"
   else
     if [[ -z "$filter" ]]; then
