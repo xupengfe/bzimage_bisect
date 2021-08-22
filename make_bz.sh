@@ -63,7 +63,7 @@ parm_check() {
     print_log "Plase put https://raw.githubusercontent.com/xupengfe/kconfig_diff/main/kconfig_kvm.sh into $BASE_PATH"
     usage
   }
-  print_log "parm check: KERNEL_SRC=$KERNEL_SRC COMMIT=$COMMIT DEST=$DEST $STATUS" "$STATUS"
+  print_log "parm check: KERNEL_SRC=$KERNEL_SRC COMMIT=$COMMIT DEST=$DEST $STATUS, BAD:$BAD_COMMIT" "$STATUS"
 }
 
 # Prepare the kconfig and checkout commit and revert action if needed
@@ -78,10 +78,10 @@ prepare_kconfig() {
 
   do_cmd "cp -rf $BASE_PATH/kconfig_kvm.sh ./"
   do_cmd "wget $KCONFIG -O $KCONFIG_NAME"
-  commit_short=$(echo ${COMMIT:0:12})
-  print_log "commit 0-12:$commit_short"
-  do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
-  do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
+  #commit_short=$(echo ${COMMIT:0:12})
+  #print_log "commit 0-12:$commit_short"
+  #do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
+
   print_log "git checkout -f $COMMIT" "$STATUS"
   do_cmd "git checkout -f $COMMIT"
   if [[ -n "$bad_commit" ]]; then
@@ -107,7 +107,7 @@ prepare_kconfig() {
   fi
 
   do_cmd "./kconfig_kvm.sh $KCONFIG_NAME \"CONFIG_LOCALVERSION\" CONFIG_LOCALVERSION=\\\"-${commit_short}\\\""
-
+  do_cmd "cp -rf ${KCONFIG_NAME}_kvm .config"
   do_cmd "make olddefconfig"
 }
 
