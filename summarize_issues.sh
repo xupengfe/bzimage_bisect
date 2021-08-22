@@ -115,7 +115,7 @@ fill_line() {
         fker_content=$(cat machineInfo0 | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}')
         fker_content="No repro.log fill $fker_content"
       }
-      FKER_CONTENT=fker_content
+      FKER_CONTENT=$fker_content
       HASH_LINE="${HASH_LINE},${fker_content}"
       ;;
     new_kernels)
