@@ -410,16 +410,13 @@ bisect_bz() {
       print_err "No bisect_info:$bisect_info" "$BISECT_LOG"
       exit 1
     }
+    # bisect_info for end example:xxx_hash is the first bad commit
     bisect_end=$(echo "$bisect_info" | grep "is the first bad commit")
     [[ -z "$bisect_end" ]] || {
       print_log "Bisect PASS: find $bisect_end" "$BISECT_LOG"
       do_cmd "git bisect log >> $BI_LOG"
       do_cmd "git bisect log >> $BISECT_LOG"
-      BAD_COMMIT=$(echo "$bisect_end" \
-                  | grep "first bad" \
-                  | tail -n 1 \
-                  | cut -d "[" -f 2 \
-                  | cut -d "]" -f 1)
+      BAD_COMMIT=$(echo "$bisect_end" | cut -d ' ' -f 1)
 
       return 0
     }
