@@ -151,6 +151,7 @@ fill_c() {
   HASH_LINE="$hash_one_c"
 
   cd ${SYZ_FOLDER}/${hash_one_c}
+  print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_c" "description"
   fill_line "$hash_one_c" "key_word"
   fill_line "$hash_one_c" "first_kernel"
@@ -167,6 +168,7 @@ fill_no_c() {
   HASH_LINE="$hash_one_no_c"
 
   cd ${SYZ_FOLDER}/${hash_one_no_c}
+  print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_no_c" "description"
   fill_line "$hash_one_no_c" "key_word"
   fill_line "$hash_one_no_c" "first_kernel"
