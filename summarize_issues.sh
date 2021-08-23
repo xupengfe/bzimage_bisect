@@ -223,6 +223,15 @@ fill_line() {
       M_TAG=""
       i_commit=""
       m_commit=""
+
+      # if $NKERS is null situation, fill null
+      [[ -z "$NKERS" ]] && {
+        HASH_LINE="${HASH_LINE},$NULL"
+        HASH_LINE="${HASH_LINE},$NULL"
+        HASH_LINE="${HASH_LINE},$NULL"
+        HASH_LINE="${HASH_LINE},$NULL"
+      }
+
       I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
       if [[ -z "$I_TAG" ]]; then
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
