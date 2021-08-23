@@ -193,7 +193,7 @@ fill_line() {
         nkers="${nkers}|${nker}"
       done
         nkers="${nkers}|"
-        NKERS="nkers"
+        NKERS=$nkers
       HASH_LINE="${HASH_LINE},${nkers}"
       ;;
     nker_hash)
@@ -261,7 +261,7 @@ summarize_no_c() {
 
   no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
-  print_log "No C header: $no_c_header" "$SUMMARIZE_LOG"
+  print_log "----->  No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
   done
@@ -273,7 +273,7 @@ summarize_c() {
 
   c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
   echo "$c_header" > $SUMMARY_C_CSV
-  print_log "C header:$c_header" "$SUMMARIZE_LOG"
+  print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
   done
