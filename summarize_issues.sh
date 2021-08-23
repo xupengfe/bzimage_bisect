@@ -134,17 +134,9 @@ fill_line() {
         return 0
       fi
 
-      [[ -n "$fker_content" ]] || {
-        print_err "${SYZ_FOLDER}/${one_hash}/repro.report no kernel!!" "$SUMMARIZE_LOG"
-        FKER_CONTENT="$NULL"
-        HASH_LINE="${HASH_LINE},$NULL"
-        return 0
-      }
-
-      # useless
       [[ -z "$fker_content" ]] && {
         [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] && {
-          print_err "repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist" "$SUMMARIZE_LOG"
+          print_err "repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
           FKER_CONTENT="NULL"
           HASH_LINE="${HASH_LINE},NULL"
           return 0
