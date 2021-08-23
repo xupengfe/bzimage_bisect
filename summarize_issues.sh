@@ -127,7 +127,7 @@ fill_line() {
         return 0
       fi
 
-      fker_content=$(cat report* | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
+      fker_content=$(cat report* 2>/dev/null | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
         HASH_LINE="${HASH_LINE},${fker_content}"
@@ -176,7 +176,7 @@ fill_line() {
       [[ -z "$nkers_content" ]] && {
         nmac_info=$(ls -ltra machineInfo* 2>/dev/null | awk -F " " '{print $NF}' | tail -n 1)
         [[ -z "$nmac_info" ]] && {
-          print_log "No ${one_hash}/machineInfo fill $FKER_CONTENT"
+          print_log "All kernels: No ${one_hash}/machineInfo fill $FKER_CONTENT" "$SUMMARIZE_LOG"
           HASH_LINE="${HASH_LINE},|${FKER_CONTENT}|"
           return 0
         }
