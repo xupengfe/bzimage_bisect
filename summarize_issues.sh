@@ -23,6 +23,8 @@ FKER_CONTENT=""
 KEY_RESULT=""
 NKERS=""
 NKER_HASH=""
+N_TAG=""
+M_TAG=""
 
 init_hash_issues() {
   local hash_all=""
@@ -198,19 +200,23 @@ fill_line() {
       ;;
     nker_hash)
       newkers=""
+      NKER_HASH=""
       newkers=$NKERS
       if [[ "newkers" == *"bzImage"* ]]; then
-        new_ker_hash=$(echo $newkers | awk -F "bzImage_" '{print $2}' | awk -F "|" '{print $1}')
+        new_ker_hash=$(echo $newkers | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}')
         [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with bzImage to null:$new_ker_hash"
         NKER_HASH=$new_ker_hash
         HASH_LINE="${HASH_LINE},${new_ker_hash}"
         return 0
       fi
-      new_ker_hash=$(echo $newkers | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "|" '{print $2}')
+      new_ker_hash=$(echo $newkers | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $2}')
       [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with +| to null:$new_ker_hash"
       NKER_HASH=$new_ker_hash
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
+    #nker_tag)
+    #  n_tag=""
+    #  ;;
     *)
       print_err "invalid $item_file!!! Ignore" "$SUMMARIZE_LOG"
       ;;
@@ -234,6 +240,7 @@ fill_c() {
   fill_line "$hash_one_c" "repro_kernel"
   fill_line "$hash_one_c" "all_kernels"
   fill_line "$hash_one_c" "nker_hash"
+  #fill_line "$hash_one_c" "nker_tag"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -252,6 +259,7 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "repro_kernel"
   fill_line "$hash_one_no_c" "all_kernels"
   fill_line "$hash_one_no_c" "nker_hash"
+  #fill_line "$hash_one_no_c" "nker_tag"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
