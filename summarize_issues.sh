@@ -134,9 +134,23 @@ fill_line() {
         return 0
       fi
 
+      fker_content=$(cat repro.log | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
+      if [[ -n "$fker_content" ]]; then
+        FKER_CONTENT="$fker_content"
+        HASH_LINE="${HASH_LINE},${fker_content}"
+        return 0
+      fi
+
+      fker_content=$(cat repro.log | grep Kernel | cut -d ' ' -f 2| head -n 1)
+      if [[ -n "$fker_content" ]]; then
+        FKER_CONTENT="$fker_content"
+        HASH_LINE="${HASH_LINE},${fker_content}"
+        return 0
+      fi
+
       [[ -z "$fker_content" ]] && {
         [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] && {
-          print_err "report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
+          print_err "report, repro.log repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
           FKER_CONTENT="NULL"
           HASH_LINE="${HASH_LINE},NULL"
           return 0
