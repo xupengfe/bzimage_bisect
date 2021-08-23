@@ -4,8 +4,8 @@
 
 source "bisect_common.sh"
 
-readonly PASS="pass"
-readonly FAIL="fail"
+readonly S_PASS="pass"
+readonly S_FAIL="fail"
 HASH_C=""
 HASH_NO_C=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
@@ -98,13 +98,13 @@ fill_line() {
       KEY_RESULT=""
       if [[ "$DES_CONTENT" == *" in "* ]]; then
         key_content=$(echo $DES_CONTENT | awk -F " in " '{print $NF}')
-        KEY_RESULT=$PASS
+        KEY_RESULT=$S_PASS
       elif [[ "$DES_CONTENT" == *":"* ]]; then
         key_content=$(echo $DES_CONTENT | awk -F ":" '{print $NF}')
-        KEY_RESULT=$PASS
+        KEY_RESULT=$S_PASS
       else
         print_log "WARN: description:$DES_CONTENT no |:| or |in|! Fill all!" "$SUMMARIZE_LOG"
-        KEY_RESULT=$FAIL
+        KEY_RESULT=$S_FAIL
         key_content=$DES_CONTENT
       fi
       HASH_LINE="${HASH_LINE},${key_content}"
