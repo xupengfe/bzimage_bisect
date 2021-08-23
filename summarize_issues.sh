@@ -260,8 +260,8 @@ summarize_no_c() {
   local no_c_header=""
 
   no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
-  echo "No C header: $no_c_header" > $SUMMARY_NO_C_CSV
-  print_log "$no_c_header" "$SUMMARIZE_LOG"
+  echo "$no_c_header" > $SUMMARY_NO_C_CSV
+  print_log "No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
   done
@@ -272,8 +272,8 @@ summarize_c() {
   local c_header=""
 
   c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
-  echo "C header:$c_header" > $SUMMARY_C_CSV
-  print_log "$c_header" "$SUMMARIZE_LOG"
+  echo "$c_header" > $SUMMARY_C_CSV
+  print_log "C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
   done
