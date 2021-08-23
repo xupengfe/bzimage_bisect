@@ -117,9 +117,9 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${KEY_RESULT}"
       ;;
     repro_kernel)
-      # repro.report should contain the first reproduce kernel
+      # report should contain the first reproduce kernel
       fker_content=""
-      fker_content=$(grep "PID:" repro.report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq | head -n 1)
+      fker_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq | head -n 1)
 
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
@@ -136,7 +136,7 @@ fill_line() {
 
       [[ -z "$fker_content" ]] && {
         [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] && {
-          print_err "repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
+          print_err "report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
           FKER_CONTENT="NULL"
           HASH_LINE="${HASH_LINE},NULL"
           return 0
