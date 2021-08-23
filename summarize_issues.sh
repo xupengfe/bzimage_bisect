@@ -208,7 +208,7 @@ fill_line() {
         HASH_LINE="${HASH_LINE},${new_ker_hash}"
         return 0
       fi
-      new_ker_hash=$(echo $NKERS | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $2}')
+      new_ker_hash=$(echo $NKERS | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $NF}')
       [[ -z "$new_ker_hash" ]] && print_err "Solve $NKERS with +| to null:$new_ker_hash"
       NKER_HASH=$new_ker_hash
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
