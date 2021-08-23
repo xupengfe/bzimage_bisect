@@ -199,18 +199,17 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${nkers}"
       ;;
     nker_hash)
-      newkers=""
       NKER_HASH=""
-      newkers=$NKERS
-      if [[ "newkers" == *"bzImage"* ]]; then
-        new_ker_hash=$(echo $newkers | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}')
-        [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with bzImage to null:$new_ker_hash"
+
+      if [[ "$NKERS" == *"bzImage"* ]]; then
+        new_ker_hash=$(echo $NKERS | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}')
+        [[ -z "$new_ker_hash" ]] && print_err "Solve $NKERS with bzImage to null:$new_ker_hash"
         NKER_HASH=$new_ker_hash
         HASH_LINE="${HASH_LINE},${new_ker_hash}"
         return 0
       fi
-      new_ker_hash=$(echo $newkers | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $2}')
-      [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with +| to null:$new_ker_hash"
+      new_ker_hash=$(echo $NKERS | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $2}')
+      [[ -z "$new_ker_hash" ]] && print_err "Solve $NKERS with +| to null:$new_ker_hash"
       NKER_HASH=$new_ker_hash
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
