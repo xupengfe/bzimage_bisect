@@ -119,7 +119,7 @@ prepare_kernel() {
     do_common_cmd "cd $KERNEL_TARGET_PATH"
     print_log "Show commit $commit" "$log_file"
 
-    git show "$commit" 2>/dev/null | head -n 1
+    git show "$commit" 2>/dev/null
     if [[ $? -eq 0 ]]; then
       print_log "git check $commit pass, no need copy $ker_src again" "$log_file"
     else
