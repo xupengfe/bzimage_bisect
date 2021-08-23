@@ -156,7 +156,7 @@ fill_line() {
       fi
 
       [[ -z "$fker_content" ]] && {
-        [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] && {
+        [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] || {
           print_err "report, repro.log repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist!" "$SUMMARIZE_LOG"
           FKER_CONTENT="NULL"
           HASH_LINE="${HASH_LINE},NULL"
