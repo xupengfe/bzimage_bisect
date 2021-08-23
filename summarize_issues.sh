@@ -4,6 +4,8 @@
 
 source "bisect_common.sh"
 
+readonly PASS="pass"
+readonly FAIL="fail"
 HASH_C=""
 HASH_NO_C=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
@@ -17,6 +19,7 @@ SYZ_REPRO_C="repro.cprog"
 HASH_LINE=""
 DES_CONTENT=""
 FKER_CONTENT=""
+KEY_RESULT=""
 
 init_hash_issues() {
   local hash_all=""
@@ -92,15 +95,25 @@ fill_line() {
       ;;
     key_word)
       key_content=""
+      KEY_RESULT=""
       if [[ "$DES_CONTENT" == *" in "* ]]; then
         key_content=$(echo $DES_CONTENT | awk -F " in " '{print $NF}')
+        KEY_RESULT=$PASS
       elif [[ "$DES_CONTENT" == *":"* ]]; then
         key_content=$(echo $DES_CONTENT | awk -F ":" '{print $NF}')
+        KEY_RESULT=$PASS
       else
-        print_log "WARN: description:$DES_CONTENT no |:| or |in|! Fill all!"
+        print_log "WARN: description:$DES_CONTENT no |:| or |in|! Fill all!" "$SUMMARIZE_LOG"
+        KEY_RESULT=$FAIL
         key_content=$DES_CONTENT
       fi
       HASH_LINE="${HASH_LINE},${key_content}"
+      ;;
+    key_ok)
+      [[ -z "$KEY_RESULT" ]] && {
+        print_err "KEY_RESULT:$KEY_RESULT is null" "$SUMMARIZE_LOG"
+      }
+      HASH_LINE="${HASH_LINE},${KEY_RESULT}"
       ;;
     first_kernel)
       fker_content=""
@@ -160,6 +173,7 @@ fill_c() {
   print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_c" "description"
   fill_line "$hash_one_c" "key_word"
+  fill_line "$hash_one_c" "key_ok"
   fill_line "$hash_one_c" "first_kernel"
   fill_line "$hash_one_c" "new_kernels"
 
@@ -177,6 +191,7 @@ fill_no_c() {
   print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_no_c" "description"
   fill_line "$hash_one_no_c" "key_word"
+  fill_line "$hash_one_no_c" "key_ok"
   fill_line "$hash_one_no_c" "first_kernel"
   fill_line "$hash_one_no_c" "new_kernels"
 
@@ -187,19 +202,18 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,first_kernel,new_kernels"
+  no_c_header="HASH,description,key_word,key_ok,first_kernel,new_kernels"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
   done
-
 }
 
 summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,first_kernel,new_kernels"
+  c_header="HASH,description,key_word,key_ok,first_kernel,new_kernels"
   echo "$c_header" > $SUMMARY_C_CSV
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
