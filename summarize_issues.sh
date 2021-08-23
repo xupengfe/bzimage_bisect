@@ -119,29 +119,36 @@ fill_line() {
     repro_kernel)
       # report should contain the first reproduce kernel
       fker_content=""
+
       fker_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq | head -n 1)
-
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
         HASH_LINE="${HASH_LINE},${fker_content}"
         return 0
       fi
 
-      fker_content=$(cat repro.report | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
+      fker_content=$(cat report* | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
         HASH_LINE="${HASH_LINE},${fker_content}"
         return 0
       fi
 
-      fker_content=$(cat repro.log | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
+      fker_content=$(cat repro.report 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
         HASH_LINE="${HASH_LINE},${fker_content}"
         return 0
       fi
 
-      fker_content=$(cat repro.log | grep Kernel | cut -d ' ' -f 2| head -n 1)
+      fker_content=$(cat repro.log 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
+      if [[ -n "$fker_content" ]]; then
+        FKER_CONTENT="$fker_content"
+        HASH_LINE="${HASH_LINE},${fker_content}"
+        return 0
+      fi
+
+      fker_content=$(cat repro.log 2>/dev/null | grep Kernel | cut -d ' ' -f 2| head -n 1)
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
         HASH_LINE="${HASH_LINE},${fker_content}"
