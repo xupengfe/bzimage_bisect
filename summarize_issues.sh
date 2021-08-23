@@ -21,6 +21,8 @@ HASH_LINE=""
 DES_CONTENT=""
 FKER_CONTENT=""
 KEY_RESULT=""
+NKERS=""
+NKER_HASH=""
 
 init_hash_issues() {
   local hash_all=""
@@ -77,6 +79,7 @@ fill_line() {
   local nmac_info=""
   local nker=""
   local nkers=""
+  local new_ker_hash=""
 
   case $item_file  in
     description)
@@ -171,6 +174,7 @@ fill_line() {
     all_kernels)
       nkers_content=""
       nkers=""
+      NKERS=""
       nkers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
 
       [[ -z "$nkers_content" ]] && {
@@ -189,7 +193,23 @@ fill_line() {
         nkers="${nkers}|${nker}"
       done
         nkers="${nkers}|"
+        NKERS="nkers"
       HASH_LINE="${HASH_LINE},${nkers}"
+      ;;
+    nker_hash)
+      newkers=""
+      newkers=$NKERS
+      if [[ "newkers" == *"bzImage"* ]]; then
+        new_ker_hash=$(echo $newkers | awk -F "bzImage_" '{print $2}' | awk -F "|" '{print $1}')
+        [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with bzImage to null:$new_ker_hash"
+        NKER_HASH=$new_ker_hash
+        HASH_LINE="${HASH_LINE},${new_ker_hash}"
+        return 0
+      fi
+      new_ker_hash=$(echo $newkers | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "|" '{print $2}')
+      [[ -z "$new_ker_hash" ]] && print_err "Solve $newkers with +| to null:$new_ker_hash"
+      NKER_HASH=$new_ker_hash
+      HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
     *)
       print_err "invalid $item_file!!! Ignore" "$SUMMARIZE_LOG"
@@ -213,7 +233,7 @@ fill_c() {
   fill_line "$hash_one_c" "key_ok"
   fill_line "$hash_one_c" "repro_kernel"
   fill_line "$hash_one_c" "all_kernels"
-  #fill_line "$hash_one_c" "new_kernel"
+  fill_line "$hash_one_c" "nker_hash"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -231,7 +251,7 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "key_ok"
   fill_line "$hash_one_no_c" "repro_kernel"
   fill_line "$hash_one_no_c" "all_kernels"
-  #fill_line "$hash_one_no_c" "new_kernel"
+  fill_line "$hash_one_no_c" "nker_hash"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -239,7 +259,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,new_kernel"
+  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
@@ -250,7 +270,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,new_kernel"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
   echo "$c_header" > $SUMMARY_C_CSV
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
