@@ -253,10 +253,10 @@ fill_line() {
       M_TAG="v${M_TAG}"
       HASH_LINE="${HASH_LINE},${M_TAG}"
 
-      i_commit=$(git show "$I_TAG" | head -n 1 | awk -F " " '{print $2}')
+      i_commit=$(git show "$I_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${i_commit}"
 
-      m_commit=$(git show "$M_TAG" | head -n 1 | awk -F " " '{print $2}')
+      m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${m_commit}"
       ;;
     *)
