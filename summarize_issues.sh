@@ -230,6 +230,7 @@ fill_line() {
         HASH_LINE="${HASH_LINE},$NULL"
         HASH_LINE="${HASH_LINE},$NULL"
         HASH_LINE="${HASH_LINE},$NULL"
+        return 0
       }
 
       I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
