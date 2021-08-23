@@ -16,6 +16,8 @@ SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
 SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 # Hard code SYZ_FOLDER, may be a variable value in the future
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
+# Hard code kernel source, will improve in future
+KER_SOURCE="/root/os.linux.intelnext.kernel"
 SYZ_REPRO_C="repro.cprog"
 HASH_LINE=""
 DES_CONTENT=""
@@ -23,8 +25,9 @@ FKER_CONTENT=""
 KEY_RESULT=""
 NKERS=""
 NKER_HASH=""
-N_TAG=""
+I_TAG=""
 M_TAG=""
+
 
 init_hash_issues() {
   local hash_all=""
@@ -83,6 +86,7 @@ fill_line() {
   local nkers=""
   local new_ker_hash=""
 
+  cd ${SYZ_FOLDER}/${one_hash}
   case $item_file  in
     description)
       des_latest=""
@@ -213,14 +217,42 @@ fill_line() {
       NKER_HASH=$new_ker_hash
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
-    #nker_tag)
-    #  n_tag=""
-    #  ;;
+    iker_tag)
+      cd $KER_SOURCE
+      I_TAG=""
+      M_TAG=""
+      i_commit=""
+      m_commit=""
+      I_TAG=$(git show-ref --tags  | grep $NKER_HASH | awk -F "/" '{print $NF}')
+      if [[ -z "$I_TAG" ]]; then
+        I_TAG=$(git ls-remote | grep $NKER_HASH | awk -F "/" '{print $NF}' | tail -n 1)
+        [[ -z "$I_TAG" ]] && {
+          print_err "git ls-remote could not get $I_TAG in $KER_SOURCE" "$SUMMARIZE_LOG"
+          HASH_LINE="${HASH_LINE},$NULL"
+          HASH_LINE="${HASH_LINE},$NULL"
+          return 0
+        }
+        print_log "git fetch origin $I_TAG" "$SUMMARIZE_LOG"
+        git fetch origin $I_TAG
+        git fetch origin
+      fi
+
+      HASH_LINE="${HASH_LINE},${I_TAG}"
+
+      M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
+      M_TAG="v${M_TAG}"
+      HASH_LINE="${HASH_LINE},${M_TAG}"
+
+      i_commit=$(git show "$I_TAG" | head -n 1 | awk -F " " '{print $2}')
+      HASH_LINE="${HASH_LINE},${i_commit}"
+
+      m_commit=$(git show "$M_TAG" | head -n 1 | awk -F " " '{print $2}')
+      HASH_LINE="${HASH_LINE},${m_commit}"
+      ;;
     *)
       print_err "invalid $item_file!!! Ignore" "$SUMMARIZE_LOG"
       ;;
   esac
-
   #print_log "$HASH_LINE" "$SUMMARIZE_LOG"
 }
 
@@ -231,7 +263,6 @@ fill_c() {
   HASH_LINE=""
   HASH_LINE="$hash_one_c"
 
-  cd ${SYZ_FOLDER}/${hash_one_c}
   #print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_c" "description"
   fill_line "$hash_one_c" "key_word"
@@ -239,7 +270,7 @@ fill_c() {
   fill_line "$hash_one_c" "repro_kernel"
   fill_line "$hash_one_c" "all_kernels"
   fill_line "$hash_one_c" "nker_hash"
-  #fill_line "$hash_one_c" "nker_tag"
+  fill_line "$hash_one_c" "iker_tag"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -250,7 +281,6 @@ fill_no_c() {
   HASH_LINE=""
   HASH_LINE="$hash_one_no_c"
 
-  cd ${SYZ_FOLDER}/${hash_one_no_c}
   #print_log "$hash_one_c" "$SUMMARIZE_LOG"
   fill_line "$hash_one_no_c" "description"
   fill_line "$hash_one_no_c" "key_word"
@@ -258,7 +288,7 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "repro_kernel"
   fill_line "$hash_one_no_c" "all_kernels"
   fill_line "$hash_one_no_c" "nker_hash"
-  #fill_line "$hash_one_no_c" "nker_tag"
+  fill_line "$hash_one_no_c" "iker_tag"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -266,7 +296,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
+  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash,i_tag,m_tag,i_commit,m_commit"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   print_log "----->  No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
@@ -278,7 +308,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash,i_tag,m_tag,i_commit,m_commit"
   echo "$c_header" > $SUMMARY_C_CSV
   print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
