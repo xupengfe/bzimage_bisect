@@ -117,21 +117,22 @@ fill_line() {
       ;;
     first_kernel)
       fker_content=""
-      fker_content=$(grep "PID:" repro.log* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
+      fker_content=$(grep "PID:" repro.report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
 
       [[ -z "$fker_content" ]] && {
         [[ -e "${SYZ_FOLDER}/${one_hash}/machineInfo0" ]] || {
-          print_err "${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist" "$SUMMARIZE_LOG"
-          HASH_LINE="${HASH_LINE},No repro.log and machineInfo0 NULL"
+          print_err "repro.report and ${SYZ_FOLDER}/${one_hash}/machineInfo0 does not exist" "$SUMMARIZE_LOG"
+          FKER_CONTENT="NULL"
+          HASH_LINE="${HASH_LINE},NULL"
           return 0
         }
         fker_content=$(cat machineInfo0 | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}')
-        fker_content="No repro.log fill $fker_content"
+        fker_content="$fker_content"
       }
       FKER_CONTENT=$fker_content
       HASH_LINE="${HASH_LINE},${fker_content}"
       ;;
-    new_kernels)
+    all_kernels)
       nkers_content=""
       nkers=""
       nkers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
@@ -175,8 +176,8 @@ fill_c() {
   fill_line "$hash_one_c" "key_word"
   fill_line "$hash_one_c" "key_ok"
   fill_line "$hash_one_c" "first_kernel"
-  fill_line "$hash_one_c" "new_kernels"
-
+  fill_line "$hash_one_c" "all_kernels"
+  #fill_line "$hash_one_c" "new_kernel"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -193,8 +194,8 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "key_word"
   fill_line "$hash_one_no_c" "key_ok"
   fill_line "$hash_one_no_c" "first_kernel"
-  fill_line "$hash_one_no_c" "new_kernels"
-
+  fill_line "$hash_one_no_c" "all_kernels"
+  #fill_line "$hash_one_no_c" "new_kernel"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -202,7 +203,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,first_kernel,new_kernels"
+  no_c_header="HASH,description,key_word,key_ok,first_kernel,all_kernels,new_kernel"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   for hash_one_no_c in $HASH_NO_C; do
     fill_no_c "$hash_one_no_c"
@@ -213,7 +214,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,first_kernel,new_kernels"
+  c_header="HASH,description,key_word,key_ok,first_kernel,all_kernels,new_kernel"
   echo "$c_header" > $SUMMARY_C_CSV
   for hash_one_c in $HASH_C; do
     fill_c "$hash_one_c"
