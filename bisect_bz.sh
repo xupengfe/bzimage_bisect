@@ -241,22 +241,22 @@ prepare_revert_bz() {
 # TODO: improve reproduce step next step
 repro_bz() {
   if [[ -z "$REPRO_C" ]]; then
-    do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO'"
-    do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls -ltr $REPRO_FILE'"
+    do_cmd "ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost 'ls -ltr $REPRO'"
+    do_cmd "ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost 'ls -ltr $REPRO_FILE'"
   else
     [[ -e "$REPRO_C" ]] || {
       print_err "$REPRO_C does not exist" "$BISECT_LOG"
       exit 1
     }
-    do_cmd "scp -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
+    do_cmd "scp -o 'StrictHostKeyChecking no' -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
     sleep 1
-    do_cmd "scp -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
+    do_cmd "scp -o 'StrictHostKeyChecking no' -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
     sleep 1
   fi
 
-  do_cmd "ssh -o ConnectTimeout=1 -p $PORT localhost 'ls $REPRO'"
-  print_log "ssh -o ConnectTimeout=1 -p $PORT localhost '$REPRO'"
-  ssh -o ConnectTimeout=1 -p $PORT localhost "$REPRO" &
+  do_cmd "ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost 'ls $REPRO'"
+  print_log "ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost '$REPRO'"
+  ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost "$REPRO" &
 }
 
 check_bz_result() {
