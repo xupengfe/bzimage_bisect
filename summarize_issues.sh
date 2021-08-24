@@ -187,6 +187,7 @@ fill_line() {
         nmac_info=$(ls -ltra machineInfo* 2>/dev/null | awk -F " " '{print $NF}' | tail -n 1)
         [[ -z "$nmac_info" ]] && {
           print_log "All kernels: No ${one_hash}/machineInfo fill $FKER_CONTENT" "$SUMMARIZE_LOG"
+          NKERS=$FKER_CONTENT
           HASH_LINE="${HASH_LINE},|${FKER_CONTENT}|"
           return 0
         }
