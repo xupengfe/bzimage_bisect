@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Make the script to summarize issues
 
+export PATH=${PATH}:/root/bzimage_bisect
 source "bisect_common.sh"
 
 readonly S_PASS="pass"
