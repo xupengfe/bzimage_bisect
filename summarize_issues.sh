@@ -208,7 +208,7 @@ fill_line() {
       NKER_HASH=""
 
       if [[ "$NKERS" == *"bzImage"* ]]; then
-        new_ker_hash=$(echo $NKERS | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}')
+        new_ker_hash=$(echo $NKERS | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}' | awk -F "_" '{print $NF}')
         [[ -z "$new_ker_hash" ]] && print_err "Solve $NKERS with bzImage to null:$new_ker_hash"
         NKER_HASH=$new_ker_hash
         HASH_LINE="${HASH_LINE},${new_ker_hash}"
