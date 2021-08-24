@@ -28,7 +28,8 @@ NKERS=""
 NKER_HASH=""
 I_TAG=""
 M_TAG=""
-
+BI_RES_FILE="/root/image/bi_result.csv"
+BI_RES_BAK="/opt/bi_result_bak.csv"
 
 init_hash_issues() {
   local hash_all=""
@@ -219,7 +220,7 @@ fill_line() {
       NKER_HASH=$new_ker_hash
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
-    iker_tag)
+    iker_tag_4)
       cd $KER_SOURCE
       I_TAG=""
       M_TAG=""
@@ -228,10 +229,8 @@ fill_line() {
 
       # if $NKERS is null situation, fill null
       [[ -z "$NKER_HASH" ]] && {
-        HASH_LINE="${HASH_LINE},$NULL"
-        HASH_LINE="${HASH_LINE},$NULL"
-        HASH_LINE="${HASH_LINE},$NULL"
-        HASH_LINE="${HASH_LINE},$NULL"
+        HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL"
+
         return 0
       }
 
@@ -240,10 +239,7 @@ fill_line() {
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
         [[ -z "$I_TAG" ]] && {
           print_err "git ls-remote could not get I_TAG with $NKER_HASH in $KER_SOURCE" "$SUMMARIZE_LOG"
-          HASH_LINE="${HASH_LINE},$NULL"
-          HASH_LINE="${HASH_LINE},$NULL"
-          HASH_LINE="${HASH_LINE},$NULL"
-          HASH_LINE="${HASH_LINE},$NULL"
+          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL"
           return 0
         }
         print_log "git fetch origin $I_TAG" "$SUMMARIZE_LOG"
@@ -262,6 +258,28 @@ fill_line() {
 
       m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${m_commit}"
+      ;;
+    bi_7)
+      bi7_content=""
+      if [[ -e "$BI_RES_FILE" ]]; then
+        bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash)
+        if [[ -z "$bi7_content" ]]; then
+          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+        else
+          HASH_LINE="${HASH_LINE},${bi7_content}"
+        fi
+      else
+        if [[ -e "$BI_RES_BAK" ]]; then
+          bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash)
+          if [[ -z "$bi7_content" ]]; then
+            HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+          else
+            HASH_LINE="${HASH_LINE},${bi7_content}"
+          fi
+        else
+          print_log "No $BI_RES_FILE & $BI_RES_BAK, bisect result is $NULL"
+        fi
+      fi
       ;;
     *)
       print_err "invalid $item_file!!! Ignore" "$SUMMARIZE_LOG"
@@ -284,7 +302,8 @@ fill_c() {
   fill_line "$hash_one_c" "repro_kernel"
   fill_line "$hash_one_c" "all_kernels"
   fill_line "$hash_one_c" "nker_hash"
-  fill_line "$hash_one_c" "iker_tag"
+  fill_line "$hash_one_c" "iker_tag_4"
+  fill_line "$hash_one_c" "bi_7"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -302,7 +321,7 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "repro_kernel"
   fill_line "$hash_one_no_c" "all_kernels"
   fill_line "$hash_one_no_c" "nker_hash"
-  fill_line "$hash_one_no_c" "iker_tag"
+  fill_line "$hash_one_no_c" "iker_tag_4"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -310,7 +329,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash,i_tag,m_tag,i_commit,m_commit"
+  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,bi_hash,bi_commit,bi_path,bi_result,mainline_result,bad_commit,bi_comment"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   print_log "----->  No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
@@ -322,7 +341,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kernels,nker_hash,i_tag,m_tag,i_commit,m_commit"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,bi_hash,bi_commit,bi_path,bi_result,mainline_result,bad_commit,bi_comment"
   echo "$c_header" > $SUMMARY_C_CSV
   print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
