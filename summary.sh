@@ -262,7 +262,7 @@ fill_line() {
     bi_7)
       bi7_content=""
       if [[ -e "$BI_RES_FILE" ]]; then
-        bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash)
+        bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
         if [[ -z "$bi7_content" ]]; then
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
         else
@@ -270,14 +270,15 @@ fill_line() {
         fi
       else
         if [[ -e "$BI_RES_BAK" ]]; then
-          bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash)
+          bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
           if [[ -z "$bi7_content" ]]; then
             HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
           else
             HASH_LINE="${HASH_LINE},${bi7_content}"
           fi
         else
-          print_log "No $BI_RES_FILE & $BI_RES_BAK, bisect result is $NULL"
+          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+          #print_log "No $BI_RES_FILE & $BI_RES_BAK, bisect result is $NULL" "$SUMMARIZE_LOG"
         fi
       fi
       ;;
