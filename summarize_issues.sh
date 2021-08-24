@@ -225,7 +225,7 @@ fill_line() {
       m_commit=""
 
       # if $NKERS is null situation, fill null
-      [[ -z "$NKERS" ]] && {
+      [[ -z "$NKER_HASH" ]] && {
         HASH_LINE="${HASH_LINE},$NULL"
         HASH_LINE="${HASH_LINE},$NULL"
         HASH_LINE="${HASH_LINE},$NULL"
@@ -237,7 +237,9 @@ fill_line() {
       if [[ -z "$I_TAG" ]]; then
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
         [[ -z "$I_TAG" ]] && {
-          print_err "git ls-remote could not get $I_TAG in $KER_SOURCE" "$SUMMARIZE_LOG"
+          print_err "git ls-remote could not get I_TAG with $NKER_HASH in $KER_SOURCE" "$SUMMARIZE_LOG"
+          HASH_LINE="${HASH_LINE},$NULL"
+          HASH_LINE="${HASH_LINE},$NULL"
           HASH_LINE="${HASH_LINE},$NULL"
           HASH_LINE="${HASH_LINE},$NULL"
           return 0
