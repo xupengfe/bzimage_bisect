@@ -91,6 +91,7 @@ prepare_kernel() {
   local kernel_target_path=""
   local ret=""
   local make_num=""
+  local tag=""
 
   # Get last kernel source like /usr/src/os.linux.intelnext.kernel/
   kernel_folder=$(echo $ker_src | awk -F "/" '{print $NF}')
@@ -119,12 +120,21 @@ prepare_kernel() {
     do_common_cmd "cd $KERNEL_TARGET_PATH"
     print_log "Show commit $commit" "$log_file"
 
-    git show "$commit" 2>/dev/null
-    if [[ $? -eq 0 ]]; then
-      print_log "git check $commit pass, no need copy $ker_src again" "$log_file"
+    ret=$(git show "$commit" 2>/dev/null | head -n 1)
+    if [[ -n "$ret" ]]; then
+      print_log "check $commit pass:$ret, no need copy $ker_src again" "$log_file"
     else
-      print_log "No $commit commit exist, will copy $ker_src" "$log_file"
-      copy_kernel "$ker_src" "$ker_path" "$log_file"
+      tag=$(git ls-remote | grep $commit \
+            | awk -F "/" '{print $NF}' \
+            | tail -n 1)
+      if [[ -n "$tag" ]]; then
+        print_log "Could fetch $commit in $KERNEL_TARGET_PATH" "$log_file"
+        git fetch origin $tag
+        git fetch origin
+      else
+        print_log "No $commit commit:$ret, will copy $ker_src" "$log_file"
+        copy_kernel "$ker_src" "$ker_path" "$log_file"
+      fi
     fi
   else
     copy_kernel "$ker_src" "$ker_path" "$log_file"
