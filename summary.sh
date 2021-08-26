@@ -162,12 +162,13 @@ fill_line() {
         return 0
       fi
 
-      fker_content=$(cat report* 2>/dev/null | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
-      if [[ -n "$fker_content" ]]; then
-        FKER_CONTENT="$fker_content"
-        HASH_LINE="${HASH_LINE},${fker_content}"
-        return 0
-      fi
+      # this way is not correct
+      #fker_content=$(cat report* 2>/dev/null | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
+      #if [[ -n "$fker_content" ]]; then
+      #  FKER_CONTENT="$fker_content"
+      #  HASH_LINE="${HASH_LINE},${fker_content}"
+      #  return 0
+      #fi
 
       #fker_content=$(cat repro.report 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
       #if [[ -n "$fker_content" ]]; then
