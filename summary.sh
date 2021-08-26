@@ -104,7 +104,7 @@ fill_line() {
   local new_ker_hash=""
 
   cd ${SYZ_FOLDER}/${one_hash}
-  case $item_file  in
+  case $item_file in
     description)
       des_latest=""
       des_content=""
@@ -378,7 +378,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,c_file,bi_hash,bi_commit,bi_path,rep_time,mainline_result,bi_result,bad_commit,bi_comment"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,c_file,bi_hash,bi_commit,bi_path,rep_time(s),mainline_result,bi_result,bad_commit,bi_comment"
   echo "$c_header" > $SUMMARY_C_CSV
   print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
