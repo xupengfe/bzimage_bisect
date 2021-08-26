@@ -3,6 +3,9 @@
 readonly PASS="good"
 readonly FAIL="bad"
 readonly SKIP="skip"
+readonly NULL="null"
+readonly S_PASS="pass"
+readonly S_FAIL="fail"
 
 readonly KERNEL_PATH="/tmp/kernel"
 PATH_FILE="/tmp/base_path"
@@ -15,7 +18,10 @@ NUM_FILE="/tmp/make_num"
 KERNEL_TARGET_PATH=""
 NEXT_COMMIT=""
 BI_LOG=""
-MAKE_RESULT=""
+# MAKE_RESULT just record 0 for pass, 1 for fail
+MAKE_RESULT="/tmp/makebz_result"
+# Make bz failed short description
+RESULT_FILE="/root/make_bz_short_result.log"
 
 do_common_cmd() {
   local cmd=$*

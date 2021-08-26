@@ -20,12 +20,45 @@ REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
+BISECT_CSV="/root/image/bisect.csv"
+# need to fill below 4 items in ONE_LINE
+MAIN_RESULT=""
+BI_RESULT=""
 BAD_COMMIT=""
+BI_COMMENT=""
+ONE_LINE=""
 # reproduce time should be less or equal than 3600s in theory
 MAX_LOOP_TIME=720
 EVERY_LOOP_TIME=5
 BASE_PATH=$BISECT_SCRIPT_FOLDER
 echo $BASE_PATH > $PATH_FILE
+
+fill_one_line() {
+  local item=""
+  local issue_hash=""
+
+  case $item in
+    hash_3)
+      issue_hash=$(echo "$REPRO_C" | awk -F "/" '{print $(NF-1)}' 2>/dev/null)
+      if [[ -z "$issue_hash" ]]; then
+        print_err "issue_hash:$issue_hash is null!" "$BISECT_LOG"
+        ONE_LINE="$NULL"
+      else
+        ONE_LINE="$issue_hash"
+      fi
+      ONE_LINE="$ONE_LINE,$COMMIT,$DMESG_FOLDER"
+      ;;
+    rep_time)
+      ONE_LINE="$ONE_LINE,$TIME"
+      ;;
+    bi_result)
+      ONE_LINE="$ONE_LINE,$MAIN_RESULT,$BI_RESULT,$BAD_COMMIT,$BI_COMMENT"
+      ;;
+    *)
+      print_err "invalid item:$item!!! Ignore" "$BISECT_LOG"
+      ;;
+  esac
+}
 
 usage() {
   cat <<__EOF
@@ -41,6 +74,13 @@ usage() {
   -r  Reproduce file
   -h  show this
 __EOF
+  BI_RESULT="$S_FAIL"
+  [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+  BI_COMMENT="Invalid parm in bisect_bz.sh"
+  echo "$ONE_LINE" >> $BISECT_CSV
+  fill_one_line "bi_result"
+  echo "$ONE_LINE" >> $BISECT_CSV
+
   exit 1
 }
 
@@ -66,14 +106,15 @@ do_cmd() {
   if [[ $result -ne 0 ]]; then
     print_log "$CMD FAIL. Return code is $result" "$BISECT_LOG"
     git bisect log 2>/dev/null >> $BISECT_LOG
+    BI_RESULT="$S_FAIL"
+    [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+    BI_COMMENT="bisect_bz cmd $CMD FAIL:$result"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
+
     clean_old_vm
     exit $result
   fi
-}
-
-tear_down() {
-  print_log "Kill old $PORT qemu:$old_vm"
-    do_cmd "kill -9 $old_vm"
 }
 
 prepare_dmesg_folder() {
@@ -88,6 +129,15 @@ prepare_dmesg_folder() {
   else
     do_cmd "mkdir -p $DMESG_FOLDER"
   fi
+
+  if [[ -e "$BISECT_CSV" ]]; then
+    print_log "$BISECT_CSV exist" "$BISECT_LOG"
+  else
+    print_log "There is no $BISECT_CSV exist, create header" "$BISECT_LOG"
+    echo "bi_hash,bi_commit,bi_path,rep_time,mainline_result,bisect_result,bad_commit,bi_comment" >> $BISECT_CSV
+  fi
+  # Will fill bi_hash,bi_commit,bi_path 3 items
+  fill_one_line "hash_3"
 }
 
 parm_check() {
@@ -166,13 +216,23 @@ check_time() {
   local time=""
 
   [[ -e "$dmesg_file" ]] || {
-    print_err "dmesg_file:$dmesg_file is not exist, exit" "$BISECT_LOG"
+    print_err "dmesg_file:$dmesg_file does not exist" "$BISECT_LOG"
+    BI_RESULT="$NULL"
+    BAD_COMMIT="$NULL"
+    BI_COMMENT="dmesg :$dmesg_file does not exist"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   }
 
   result=$(cat $dmesg_file | grep "$POINT" | head -n 1)
   [[ -n "$result" ]] || {
-    print_err "No $POINT dmesg info:$result, exit" "$BISECT_LOG"
+    print_err "No $POINT dmesg info:$result" "$BISECT_LOG"
+    BI_RESULT="$NULL"
+    BAD_COMMIT="$NULL"
+    BI_COMMENT="No $POINT find in time check dmesg:$dmesg_file"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   }
 
@@ -186,10 +246,12 @@ check_time() {
     TIME=$((time+360))
   fi
   print_log "Logic: |<25:time|25-30 +20|>30 + 360| Set TIME:$TIME" "$BISECT_LOG"
+  fill_one_line "rep_time"
 }
 
 prepare_bz() {
   local commit=$1
+  local make_res=""
 
   [[ -n "$commit" ]] || {
     print_err "prepare bz commit is null:$commit" "$BISECT_LOG"
@@ -203,13 +265,25 @@ prepare_bz() {
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST" -o "$KERNEL_PATH"
   fi
 
-  [[ "$MAKE_RESULT" -eq 0 ]] || {
+  make_res=$(cat $MAKE_RESULT)
+  [[ "$make_res" -eq 0 ]] || {
     if [[ "$commit" == "$COMMIT" ]]; then
       print_err "END ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      BI_RESULT="$S_FAIL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT=$(cat $RESULT_FILE 2>/dev/null)
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     fi
     if [[ "$commit" == "$START_COMMIT" ]]; then
       print_err "START ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      BI_RESULT="$S_FAIL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT=$(cat $RESULT_FILE 2>/dev/null)
+      echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     fi
   }
@@ -219,9 +293,18 @@ prepare_revert_bz() {
   local end_commit=$1
   local bad_commit=$2
   local bzimage=$3
+  local make_res=""
 
   [[ -n "$end_commit" ]] || {
     print_err "prepare bz commit is null:$end_commit" "$BISECT_LOG"
+    BI_RESULT="$S_FAIL"
+    [[ "$BAD_COMMIT" == "$bad_commit" ]] || {
+      print_err "revert bz: bad commit is null" "$BISECT_LOG"
+      BAD_COMMIT="$BAD_COMMIT -> ${bad_commit}"
+    }
+    BI_COMMENT="Revert and end commit $end_commit is null"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   }
 
@@ -232,8 +315,17 @@ prepare_revert_bz() {
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$end_commit" -b "$bad_commit" -d "$DEST" -o "$KERNEL_PATH" -f "$bzimage"
   fi
 
-  [[ "$MAKE_RESULT" -eq 0 ]] || {
-    print_err "Make $end_commit $bad_commit $bzimage failed, exit" "$BISECT_LOG"
+  make_res=$(cat $MAKE_RESULT)
+  [[ "$make_res" -eq 0 ]] || {
+    print_err "Make $end_commit $bad_commit $bzimage failed" "$BISECT_LOG"
+    BI_RESULT="$S_FAIL"
+    [[ "$BAD_COMMIT" == "$bad_commit" ]] || {
+      print_err "revert bz: bad commit is null" "$BISECT_LOG"
+      BAD_COMMIT="$BAD_COMMIT -> ${bad_commit}"
+    }
+    BI_COMMENT=$(cat $RESULT_FILE 2>/dev/null)
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   }
 }
@@ -246,6 +338,11 @@ repro_bz() {
   else
     [[ -e "$REPRO_C" ]] || {
       print_err "$REPRO_C does not exist" "$BISECT_LOG"
+      BI_RESULT="$NULL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT="$REPRO_C does not exist in vm"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     }
     do_cmd "scp -o 'StrictHostKeyChecking no' -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
@@ -270,6 +367,11 @@ check_bz_result() {
   dmesg_info=$(cat $dmesg_file)
   [[ -n "$dmesg_info" ]] || {
     print_err "$dmesg_file is null:$dmesg_info, could not judge!" "$BISECT_LOG"
+    BI_RESULT="$NULL"
+    [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+    BI_COMMENT="$dmesg_file is null"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     clean_old_vm
     exit 1
   }
@@ -311,6 +413,11 @@ test_bz() {
   check_bz=$(ls "$bz_file" 2>/dev/null)
   if [[ -z "$check_bz" ]]; then
     print_err "bzImage:$bz_file does not exist:$check_bz" "$BISECT_LOG"
+    BI_RESULT="$S_FAIL"
+    [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+    BI_COMMENT="bzImage $bz_file does not exist"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   fi
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
@@ -336,13 +443,22 @@ test_bz() {
 
 test_commit() {
   local commit=$1
+  local make_res=""
   COMMIT_RESULT=""
 
   prepare_bz "$commit"
-  if [[ "$MAKE_RESULT" -eq 0 ]]; then
+  make_res=$(cat $MAKE_RESULT)
+  if [[ "$make_res" -eq 0 ]]; then
     test_bz "${DEST}/bzImage_${commit}" "$commit"
     if [[ -z "$COMMIT_RESULT" ]]; then
       print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      BI_RESULT="$NULL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT="Test $commit result is null"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
+
       clean_old_vm
       exit 1
     fi
@@ -371,6 +487,12 @@ bisect_bz() {
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
     clean_old_vm
+    MAIN_RESULT="$NULL"
+    BI_RESULT="$S_FAIL"
+    BAD_COMMIT="$NULL"
+    BI_COMMENT="END commit $COMMIT pass unexpectedly"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   else
     check_time "${DMESG_FOLDER}/${COMMIT}_dmesg.log"
@@ -381,8 +503,16 @@ bisect_bz() {
   test_commit "$START_COMMIT"
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_log "Start commit $COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
+    # MAIN LINE RESULT should fill here
+    MAIN_RESULT="$S_PASS"
   else
     print_log "Srart commit $COMMIT FAIL, will stop!" "$BISECT_LOG"
+    MAIN_RESULT="$S_FAIL"
+    BI_RESULT="$S_FAIL"
+    BAD_COMMIT="$NULL"
+    BI_COMMENT="Main line kernel reproduce this issue"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
     clean_old_vm
     exit 0
   fi
@@ -407,7 +537,13 @@ bisect_bz() {
 
     bisect_info=$(git bisect $COMMIT_RESULT $NEXT_COMMIT)
     [[ -n "$bisect_info" ]] || {
-      print_err "No bisect_info:$bisect_info" "$BISECT_LOG"
+      print_err "No bisect_info $bisect_info" "$BISECT_LOG"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      BI_RESULT="$NULL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT="No bisect_info $bisect_info"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     }
     # bisect_info for end example:xxx_hash is the first bad commit
@@ -433,6 +569,12 @@ bisect_bz() {
       NEXT_COMMIT=$commit
     else
       print_err "$commit is not same as bisect tip commit_c:$commit_c" "$BISECT_LOG"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      BI_RESULT="$S_FAIL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_COMMENT="No bisect_info $bisect_info"
+      fill_one_line "$commit is not same as tip:$commit_c"
+      echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     fi
     test_commit "$NEXT_COMMIT"
@@ -441,29 +583,57 @@ bisect_bz() {
 
 verify_bad_commit() {
   local revert_bz=""
+  local make_res=""
   local commit_revert=""
 
   commit_revert="${COMMIT}_${BAD_COMMIT}_revert"
   revert_bz="${DEST}/bzImage_${commit_revert}"
   prepare_revert_bz "$COMMIT" "$BAD_COMMIT" "$revert_bz"
 
-  if [[ "$MAKE_RESULT" -eq 0 ]]; then
+  [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="ERR:bad_commit is null in revert step!"
+
+  make_res=$(cat $MAKE_RESULT)
+  if [[ "$make_res" -eq 0 ]]; then
     test_bz "$revert_bz" "$commit_revert"
     print_log "$commit_revert $COMMIT_RESULT" "$BI_LOG"
+
     if [[ -z "$COMMIT_RESULT" ]]; then
       print_err "After test $commit_revert, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+
+      BI_RESULT="$S_FAIL"
+      BI_COMMENT="test $commit_revert result is null"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
     elif [[ "$COMMIT_RESULT" == "$PASS" ]]; then
       print_log "Bisect successfully! $commit_revert bzimage passed!" "$BISECT_LOG"
       print_log "Bisect successfully! $commit_revert bzimage passed!" "$BI_LOG"
+
+      BI_RESULT="$S_PASS"
+      BI_COMMENT="Bisect PASS"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
     elif [[ "$COMMIT_RESULT" == "$FAIL" ]]; then
       print_err "Bisect failed! $commit_revert bzimage failed!" "$BISECT_LOG"
       print_err "Bisect failed! $commit_revert bzimage failed!" "$BI_LOG"
+
+      BI_RESULT="$S_FAIL"
+      BI_COMMENT="Revert $commit_revert test failed"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
     else
       print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BISECT_LOG"
       print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BI_LOG"
+      BI_RESULT="$S_FAIL"
+      BI_COMMENT="Revert step invalid result:$COMMIT_RESULT"
+      fill_one_line "bi_result"
+      echo "$ONE_LINE" >> $BISECT_CSV
     fi
   else
     print_err "Make $revert_bz failed, please check ${DEST}/${BZ_LOG}"
+    BI_RESULT="$S_FAIL"
+    BI_COMMENT="make revert $revert_bz failed"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
   fi
   clean_old_vm
 }

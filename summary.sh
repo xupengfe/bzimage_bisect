@@ -5,9 +5,6 @@
 export PATH=${PATH}:/root/bzimage_bisect
 source "bisect_common.sh"
 
-readonly S_PASS="pass"
-readonly S_FAIL="fail"
-readonly NULL="NULL"
 HASH_CPROGS=""
 HASH_C=""
 HASH_NO_C=""

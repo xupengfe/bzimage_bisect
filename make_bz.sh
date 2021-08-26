@@ -26,6 +26,7 @@ usage() {
   -o  Make kernel path
   -h  show this
 __EOF
+  echo "make_bz.sh parm invalid" > $RESULT_FILE
   exit 1
 }
 
@@ -39,11 +40,14 @@ do_cmd() {
   result=$?
   if [[ $result -ne 0 ]]; then
     print_log "$CMD FAIL. Return code is $result" "$STATUS"
+    echo "$CMD FAIL. Return code is $result" > $RESULT_FILE
     exit $result
   fi
 }
 
 parm_check() {
+  # clean old RESULT_FILE
+  rm -rf $RESULT_FILE
   [[ -d "$DEST" ]]  || {
     print_log "DEST:$DEST folder is not exist!"
     usage
@@ -64,6 +68,7 @@ parm_check() {
     usage
   }
   print_log "parm check: KERNEL_SRC=$KERNEL_SRC COMMIT=$COMMIT DEST=$DEST $STATUS, BAD:$BAD_COMMIT" "$STATUS"
+  echo "0" > $MAKE_RESULT
 }
 
 # Prepare the kconfig and checkout commit and revert action if needed
@@ -90,6 +95,7 @@ prepare_kconfig() {
     git revert -n $bad_commit
     [[ $? -eq 0 ]] || {
       print_err "git revert $bad_commit failed! Could not make!" "$STATUS"
+      echo "git revert $bad_commit failed" > $RESULT_FILE
       exit 1
     }
     revert_status=$(git status)
@@ -123,12 +129,14 @@ make_bzimage() {
   tmp_size=$(df -Ph $UPPER_KERNEL_PATH | tail -n 1 | awk -F ' ' '{print $4}')
   tmp_g=$(echo $tmp_size | grep G)
   [[ -n "$tmp_g" ]] || {
-    print_log "No G in tmp_size:$tmp_size" "$STATUS"
+    print_log "Less than 1G size in folder:$UPPER_KERNEL_PATH" "$STATUS"
+    echo "No enough size in $UPPER_KERNEL_PATH" > $RESULT_FILE
     exit 1
   }
   tmp_num=$(echo $tmp_size | cut -d 'G' -f 1)
   [[ "$tmp_num" -le "8" ]] && {
     print_log "$UPPER_KERNEL_PATH available size is less than 8G, please make sure enough space to make kernel!" "$STATUS"
+    echo "$UPPER_KERNEL_PATH available size is less than 8G" > $RESULT_FILE
     exit 1
   }
 
@@ -147,6 +155,7 @@ make_bzimage() {
   if [[ "$result_make" -eq 0 ]]; then
     if [[ -z "$BZIMAGE_FILE" ]]; then
       do_cmd "cp -rf ${kernel_target_folder}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}"
+      echo "Make ${DEST}/bzImage_${COMMIT} successfully" > $RESULT_FILE
     else
       print_log "Saved ${kernel_target_folder}/arch/x86/boot/bzImage into $BZIMAGE_FILE" $STATUS
       cp -rf ${kernel_target_folder}/arch/x86/boot/bzImage $BZIMAGE_FILE
@@ -154,9 +163,10 @@ make_bzimage() {
         print_err "Saved $BZIMAGE_FILE failed, will save to ${DEST}/bzImage_${COMMIT}_${BAD_COMMIT}" $STATUS
         do_cmd "cp -rf ${kernel_target_folder}/arch/x86/boot/bzImage ${DEST}/bzImage_${COMMIT}_${BAD_COMMIT}"
       }
+      echo "$BZIMAGE_FILE or ${DEST}/bzImage_${COMMIT}_${BAD_COMMIT} is ready" > $RESULT_FILE
     fi
 
-    MAKE_RESULT=0
+    echo "0" > $MAKE_RESULT
     print_log "PASS: make bzImage pass" "$STATUS"
     echo "source_kernel:$KERNEL_SRC" >> $STATUS
     echo "target_kernel:$kernel_target_folder" >> $STATUS
@@ -172,8 +182,9 @@ make_bzimage() {
 
     print_log "Used $USE_SEC seconds" "$STATUS"
   else
-    MAKE_RESULT=1
+    echo "1" > $MAKE_RESULT
     print_err "FAIL: make bzImage_${COMMIT} fail" "$STATUS"
+    echo "make bzImage_${COMMIT} fail" > $RESULT_FILE
   fi
 
   do_cmd "rm -rf $NUM_FILE"
