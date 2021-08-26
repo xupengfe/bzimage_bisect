@@ -28,8 +28,7 @@ NKERS=""
 NKER_HASH=""
 I_TAG=""
 M_TAG=""
-BI_RES_FILE="/root/image/bi_result.csv"
-BI_RES_BAK="/opt/bi_result_bak.csv"
+BISECT_BAK="/opt/bisect_bak.csv"
 
 init_hash_issues() {
   local hash_all=""
@@ -298,16 +297,16 @@ fill_line() {
       ;;
     bi_8)
       bi_content=""
-      if [[ -e "$BI_RES_FILE" ]]; then
-        bi_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
+      if [[ -e "$BISECT_CSV" ]]; then
+        bi_content=$(cat "$BISECT_CSV" | grep $one_hash | tail -n 1)
         if [[ -z "$bi_content" ]]; then
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
         else
           HASH_LINE="${HASH_LINE},${bi_content}"
         fi
       else
-        if [[ -e "$BI_RES_BAK" ]]; then
-          bi_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
+        if [[ -e "$BISECT_BAK" ]]; then
+          bi_content=$(cat "$BISECT_BAK" | grep $one_hash | tail -n 1)
           if [[ -z "$bi_content" ]]; then
             HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
           else
@@ -315,7 +314,7 @@ fill_line() {
           fi
         else
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
-          #print_log "No $BI_RES_FILE & $BI_RES_BAK, bisect result is $NULL" "$SUMMARIZE_LOG"
+          #print_log "No $BISECT_CSV & $BISECT_BAK, so $NULL" "$SUMMARIZE_LOG"
         fi
       fi
       ;;
