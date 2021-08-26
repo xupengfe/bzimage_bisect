@@ -292,21 +292,21 @@ fill_line() {
       fi
       ;;
     bi_8)
-      bi7_content=""
+      bi_content=""
       if [[ -e "$BI_RES_FILE" ]]; then
-        bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
-        if [[ -z "$bi7_content" ]]; then
+        bi_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
+        if [[ -z "$bi_content" ]]; then
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
         else
-          HASH_LINE="${HASH_LINE},${bi7_content}"
+          HASH_LINE="${HASH_LINE},${bi_content}"
         fi
       else
         if [[ -e "$BI_RES_BAK" ]]; then
-          bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
-          if [[ -z "$bi7_content" ]]; then
+          bi_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
+          if [[ -z "$bi_content" ]]; then
             HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
           else
-            HASH_LINE="${HASH_LINE},${bi7_content}"
+            HASH_LINE="${HASH_LINE},${bi_content}"
           fi
         else
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
