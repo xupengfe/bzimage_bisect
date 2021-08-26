@@ -8,6 +8,7 @@ source "bisect_common.sh"
 readonly S_PASS="pass"
 readonly S_FAIL="fail"
 readonly NULL="NULL"
+HASH_CPROGS=""
 HASH_C=""
 HASH_NO_C=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
@@ -20,6 +21,8 @@ SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 # Hard code kernel source, will improve in future
 KER_SOURCE="/root/os.linux.intelnext.kernel"
 SYZ_REPRO_C="repro.cprog"
+SYZ_REPRO_PROG="repro.prog"
+REP_C="rep.c"
 HASH_LINE=""
 DES_CONTENT=""
 FKER_CONTENT=""
@@ -36,8 +39,10 @@ init_hash_issues() {
   local hash_one=""
   local all_num=""
   local c_num=""
+  local only_prog_num=0
   local check_num=""
   local no_c_num=0
+  local hash_cprog
 
   [[ -d "$SYZ_FOLDER" ]] || {
     print_err "$SYZ_FOLDER does not exist, exit!" "$SUMMARIZE_LOG"
@@ -45,16 +50,31 @@ init_hash_issues() {
   }
 
   hash_all=$(ls -1 $SYZ_FOLDER)
-  HASH_C=$(find /root/syzkaller/workdir/crashes -name "$SYZ_REPRO_C" \
+  HASH_CPROGS=$(find $SYZ_FOLDER -name "$SYZ_REPRO_C" \
           | awk -F "/" '{print $(NF-1)}')
+  HASH_PROG=$(find $SYZ_FOLDER -name "$SYZ_REPRO_PROG" \
+            | awk -F "/" '{print $(NF-1)}')
   all_num=$(ls -1 $SYZ_FOLDER | wc -l)
 
-  c_num=$(find /root/syzkaller/workdir/crashes -name "$SYZ_REPRO_C" | wc -l)
+  c_num=$(find $SYZ_FOLDER -name "$SYZ_REPRO_C" | wc -l)
+
+  for hash_cprog in $HASH_CPROGS; do
+    HASH_C="$HASH_C $hash_cprog"
+  done
 
   for hash_one in $hash_all; do
     if [[ "$HASH_C" == *"$hash_one"* ]]; then
       continue
     else
+      # if issue doesn't have repro.cprog but has repro.prog, will generate c
+      if [[ "$HASH_PROG" ==  *"$hash_one"* ]]; then
+        HASH_C="$HASH_C $hash_one"
+        syz-prog2c -prog ${SYZ_FOLDER}/${hash_one}/repro.prog > ${SYZ_FOLDER}/${hash_one}/rep.c
+        [[ $? -eq 0 ]] || print_err "syz-prog2c $hash_one repro.prog error" "$SUMMARIZE_LOG"
+        ((only_prog_num+=1))
+        continue
+      fi
+
       if [[ "$no_c_num" -eq 0 ]]; then
         HASH_NO_C="$hash_one"
       else
@@ -64,9 +84,9 @@ init_hash_issues() {
     fi
   done
 
-  check_num=$((no_c_num+c_num))
+  check_num=$((no_c_num+c_num+only_prog_num))
 
-  print_log "check:$check_num, all:$all_num, c:$c_num, no_c:$no_c_num" "$SUMMARIZE_LOG"
+  print_log "check:$check_num, all:$all_num, c:$c_num, only_prog:$only_prog_num no_c:$no_c_num" "$SUMMARIZE_LOG"
   [[ "$check_num" -eq "$all_num" ]] || {
     print_err "check_num:$check_num is not equal to $all_num" "$SUMMARIZE_LOG"
   }
@@ -259,12 +279,24 @@ fill_line() {
       m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${m_commit}"
       ;;
-    bi_7)
+    c_file)
+      if [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
+        HASH_LINE="${HASH_LINE},repro.cprog"
+      else
+        if [[ -e "${SYZ_FOLDER}/${one_hash}/rep.c" ]]; then
+          HASH_LINE="${HASH_LINE},rep.c"
+        else
+          print_err "C_HASH:one_hash didn't find repro.cprog or rep.c!" "$SUMMARIZE_LOG"
+          HASH_LINE="${HASH_LINE},NA"
+        fi
+      fi
+      ;;
+    bi_8)
       bi7_content=""
       if [[ -e "$BI_RES_FILE" ]]; then
         bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
         if [[ -z "$bi7_content" ]]; then
-          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
         else
           HASH_LINE="${HASH_LINE},${bi7_content}"
         fi
@@ -272,12 +304,12 @@ fill_line() {
         if [[ -e "$BI_RES_BAK" ]]; then
           bi7_content=$(cat "$BI_RES_FILE" | grep $one_hash | tail -n 1)
           if [[ -z "$bi7_content" ]]; then
-            HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+            HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
           else
             HASH_LINE="${HASH_LINE},${bi7_content}"
           fi
         else
-          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
+          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL,$NULL"
           #print_log "No $BI_RES_FILE & $BI_RES_BAK, bisect result is $NULL" "$SUMMARIZE_LOG"
         fi
       fi
@@ -304,7 +336,8 @@ fill_c() {
   fill_line "$hash_one_c" "all_kernels"
   fill_line "$hash_one_c" "nker_hash"
   fill_line "$hash_one_c" "iker_tag_4"
-  fill_line "$hash_one_c" "bi_7"
+  fill_line "$hash_one_c" "c_file"
+  fill_line "$hash_one_c" "bi_8"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
 }
 
@@ -330,7 +363,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,bi_hash,bi_commit,bi_path,bi_result,mainline_result,bad_commit,bi_comment"
+  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   print_log "----->  No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
@@ -342,7 +375,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,bi_hash,bi_commit,bi_path,bi_result,mainline_result,bad_commit,bi_comment"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,c_file,bi_hash,bi_commit,bi_path,bi_result,mainline_result,bad_commit,bi_comment,rep_time"
   echo "$c_header" > $SUMMARY_C_CSV
   print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
