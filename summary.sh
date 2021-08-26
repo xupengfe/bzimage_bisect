@@ -287,7 +287,7 @@ fill_line() {
           HASH_LINE="${HASH_LINE},rep.c"
         else
           print_err "C_HASH:one_hash didn't find repro.cprog or rep.c!" "$SUMMARIZE_LOG"
-          HASH_LINE="${HASH_LINE},NA"
+          HASH_LINE="${HASH_LINE},$NULL"
         fi
       fi
       ;;
