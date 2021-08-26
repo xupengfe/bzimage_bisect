@@ -44,8 +44,7 @@ filter_bisect_hashs() {
             print_log "$one_hash key is fail, skip" "$SCAN_LOG"
           fi
           ;;
-        $S_FAIL)
-        $S_PASS)
+        $S_FAIL|$S_PASS)
           print_log "$one_hash bisect_result is $bisect_result, no need bisect" "$SCAN_LOG"
           ;;
         *)
