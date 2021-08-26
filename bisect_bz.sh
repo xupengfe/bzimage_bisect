@@ -168,6 +168,20 @@ parm_check() {
   }
   echo $NUM > "$NUM_FILE"
 
+  if [[ "$START_COMMIT" == "$NULL" ]]; then
+    DMESG_FOLDER="$NULL"
+    fill_one_line "hash_3"
+
+    fill_one_line "rep_time"
+    MAIN_RESULT="$NULL"
+    # Don't infinite loop in no commit hash, so fail it.
+    BI_RESULT="$S_FAIL"
+    BAD_COMMIT="$NULL"
+    BI_COMMENT="No END COMMIT"
+    fill_one_line "bi_result"
+    echo "$ONE_LINE" >> $BISECT_CSV
+  fi
+
   prepare_dmesg_folder
   BISECT_LOG="${DMESG_FOLDER}/${BISECT_LOG}"
   BI_LOG="${DEST}/bi.log"
@@ -270,6 +284,7 @@ prepare_bz() {
   [[ "$make_res" -eq 0 ]] || {
     if [[ "$commit" == "$COMMIT" ]]; then
       print_err "END ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+      fill_one_line "rep_time"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
       BI_RESULT="$S_FAIL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
@@ -489,6 +504,8 @@ bisect_bz() {
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
     clean_old_vm
+    TIME="3600"
+    fill_one_line "rep_time"
     MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
     BAD_COMMIT="$NULL"
