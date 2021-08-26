@@ -257,6 +257,18 @@ fill_line() {
         return 0
       }
 
+    # for CET branch test
+    [[ "$NKER_HASH" == "cetkvm" ]] && {
+      I_TAG="7ed918f933a7a4e7c67495033c06e4fe674acfbd"
+      M_TAG="36a21d51725af2ce0700c6ebcb6b9594aac658a6"
+      i_commit="7ed918f933a7a4e7c67495033c06e4fe674acfbd"
+      m_commit="36a21d51725af2ce0700c6ebcb6b9594aac658a6"
+      HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
+      print_err "cetkvm branch will fill cet!" "$SUMMARIZE_LOG"
+
+      return 0
+    }
+
       I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
       if [[ -z "$I_TAG" ]]; then
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)

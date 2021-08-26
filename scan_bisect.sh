@@ -68,6 +68,11 @@ execute_bisect_cmd() {
   START_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $11}')
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
 
+  # if CET branch, will change as below!
+  [[ "$END_COMMIT" == "7ed918f933a7a4e7c67495033c06e4fe674acfbd" ]] && {
+    KER_SRC="/home/linux_cet"
+  }
+
   print_log "bisect_bz.sh -k $KER_SRC -m $END_COMMIT -s $START_COMMIT -d $DEST -p $KEYWORD -i $IMAGE -r ${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" "$SCAN_LOG"
   bisect_bz.sh -k "$KER_SRC" -m "$END_COMMIT" -s "$START_COMMIT" -d "$DEST" -p "$KEYWORD" -i "$IMAGE" -r "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}"
 }
