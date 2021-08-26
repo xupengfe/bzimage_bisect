@@ -34,7 +34,7 @@ BASE_PATH=$BISECT_SCRIPT_FOLDER
 echo $BASE_PATH > $PATH_FILE
 
 fill_one_line() {
-  local item=""
+  local item=$1
   local issue_hash=""
 
   case $item in
@@ -260,6 +260,7 @@ prepare_bz() {
 
   if [[ -e "${DEST}/bzImage_${commit}" ]]; then
     print_log "|${DEST}/bzImage_${commit}| exist, no need make" "$BISECT_LOG"
+    return 0
   else
     print_log "|${DEST}/bzImage_${commit}| was not exist, will make it" "$BISECT_LOG"
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$commit" -d "$DEST" -o "$KERNEL_PATH"
@@ -310,6 +311,7 @@ prepare_revert_bz() {
 
   if [[ -e "$bzimage" ]]; then
     print_log "$bzimage exist, no need make" "$BISECT_LOG"
+    return 0
   else
     print_log "${BASE_PATH}/make_bz.sh -k $KERNEL_SRC -m $end_commit -b $bad_commit -d $DEST -o $KERNEL_PATH -f $bzimage" "$BISECT_LOG"
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$end_commit" -b "$bad_commit" -d "$DEST" -o "$KERNEL_PATH" -f "$bzimage"
