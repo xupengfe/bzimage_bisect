@@ -76,7 +76,7 @@ scan_bisect() {
   local result=""
   local hash=""
 
-  for (;;); do
+  for (i=0;i<10;); do
 
     summary.sh
     if [[ -e "$SUMMARY_C_CSV" ]]; then
