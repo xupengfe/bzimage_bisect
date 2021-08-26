@@ -28,7 +28,6 @@ NKERS=""
 NKER_HASH=""
 I_TAG=""
 M_TAG=""
-BISECT_BAK="/opt/bisect_bak.csv"
 
 init_hash_issues() {
   local hash_all=""

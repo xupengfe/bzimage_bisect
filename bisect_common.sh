@@ -6,6 +6,8 @@ readonly SKIP="skip"
 readonly NULL="null"
 readonly S_PASS="pass"
 readonly S_FAIL="fail"
+readonly BISECT_CSV="/root/image/bisect.csv"
+readonly BISECT_BAK="/opt/bisect_bak.csv"
 
 readonly KERNEL_PATH="/tmp/kernel"
 PATH_FILE="/tmp/base_path"

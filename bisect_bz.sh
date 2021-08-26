@@ -20,7 +20,7 @@ REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
-BISECT_CSV="/root/image/bisect.csv"
+
 # need to fill below 4 items in ONE_LINE
 MAIN_RESULT=""
 BI_RESULT=""
