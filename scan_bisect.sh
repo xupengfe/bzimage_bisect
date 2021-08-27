@@ -130,6 +130,7 @@ scan_bisect() {
     fi
 
     # every 15min to scan
+    print_log "One loop finished, sleep 900" "$SCAN_LOG"
     sleep 900
   done
 }
