@@ -30,4 +30,4 @@ commit 62fb9874f5da54fdb243003b386128037319b219 (tag: v5.13)
 ./summary.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd" -s "36a21d51725af2ce0700c6ebcb6b9594aac658a6"
 
 # For specific kernel and specific commit
-./scan_bisect.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd"
+./scan_bisect.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd" -s "36a21d51725af2ce0700c6ebcb6b9594aac658a6"
