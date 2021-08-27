@@ -102,12 +102,15 @@ execute_bisect_cmd() {
 scan_bisect() {
   local result=""
   local hash=""
+  local result=0
 
   while true; do
     # Clean BISECT HASHS list before each loop
     BISECT_HASHS=""
 
-    if [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]]; then
+    result=0
+    [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]] && result=1
+    if [[ "$result" -eq 1 ]]; then
       print_log "Get ker:$KERNEL_SPECIFIC, END commit:$COMMIT_SPECIFIC, start:$SPEC_START_COMMIT" "$SCAN_LOG"
       summary.sh -k $KERNEL_SPECIFIC -m $COMMIT_SPECIFIC -s $SPEC_START_COMMIT
     else
