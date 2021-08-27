@@ -433,6 +433,7 @@ summarize_issues() {
   init_hash_issues
   summarize_c
   summarize_no_c
+  cp -rf "$BISECT_CSV" "$BISECT_BAK"
 }
 
   while getopts :k:m:s:h arg; do
