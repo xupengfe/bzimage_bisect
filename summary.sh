@@ -269,20 +269,22 @@ fill_line() {
       }
 
     # For SPECIFIC COMMIT and branch
-    if [[ -d "$KERNEL_SPECIFIC" ]]; then
-      [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
-        I_TAG="$COMMIT_SPECIFIC"
-        M_TAG="$START_COMMIT"
-        i_commit="$COMMIT_SPECIFIC"
-        m_commit="$START_COMMIT"
-        HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
-        print_err "Specific branch fill END:$COMMIT_SPECIFIC start:$START_COMMIT" "$SUMMARIZE_LOG"
+    [[ -z "$KERNEL_SPECIFIC" ]] || {
+      if [[ -d "$KERNEL_SPECIFIC" ]]; then
+        [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
+          I_TAG="$COMMIT_SPECIFIC"
+          M_TAG="$START_COMMIT"
+          i_commit="$COMMIT_SPECIFIC"
+          m_commit="$START_COMMIT"
+          HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
+          print_err "Specific branch fill END:$COMMIT_SPECIFIC start:$START_COMMIT" "$SUMMARIZE_LOG"
 
-        return 0
-      }
-    else
-      print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SUMMARIZE_LOG"
-    fi
+          return 0
+        }
+      else
+        print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SUMMARIZE_LOG"
+      fi
+    }
 
       I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
       if [[ -z "$I_TAG" ]]; then

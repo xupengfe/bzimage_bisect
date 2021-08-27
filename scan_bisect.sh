@@ -82,14 +82,17 @@ execute_bisect_cmd() {
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
 
   KER_SRC="$KER_SRC_DEFAULT"
+
   # if SPECIFIC COMMIT, will change as below kernel source and commit
-  if [[ -d "$KERNEL_SPECIFIC" ]]; then
-    [[ "$END_COMMIT" == *"$KERNEL_SPECIFIC"* ]] && {
-      KER_SRC="$KERNEL_SPECIFIC"
-    }
-  else
-    print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SCAN_LOG"
-  fi
+  [[ -z "$KERNEL_SPECIFIC" ]] || {
+    if [[ -d "$KERNEL_SPECIFIC" ]]; then
+      [[ "$END_COMMIT" == *"$KERNEL_SPECIFIC"* ]] && {
+        KER_SRC="$KERNEL_SPECIFIC"
+      }
+    else
+      print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SCAN_LOG"
+    fi
+  }
 
   print_log "bisect_bz.sh -k $KER_SRC -m $END_COMMIT -s $START_COMMIT -d $DEST -p $KEYWORD -i $IMAGE -r ${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" "$SCAN_LOG"
   bisect_bz.sh -k "$KER_SRC" -m "$END_COMMIT" -s "$START_COMMIT" -d "$DEST" -p "$KEYWORD" -i "$IMAGE" -r "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}"
