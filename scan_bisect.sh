@@ -15,11 +15,23 @@ BISECT_HASHS=""
 END_COMMIT=""
 START_COMMIT=""
 KEYWORD=""
-KER_SRC="/root/os.linux.intelnext.kernel"
+KER_SRC_DEFAULT="/root/os.linux.intelnext.kernel"
+KER_SRC=""
 DEST="/home/bzimage"
 IMAGE="/root/image/centos8_2.img"
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 REP_CPROG="repro.cprog"
+
+usage() {
+  cat <<__EOF
+  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-h]
+  -k  KERNEL SPECIFIC source folder(optional)
+  -m  COMMIT SPECIFIC END COMMIT ID(optional)
+  -h  show this
+__EOF
+  exit 1
+}
+
 
 # filter needs ISSUES_HASHS of bisect and fill in BISECT_HASHS
 filter_bisect_hashs() {
@@ -69,10 +81,15 @@ execute_bisect_cmd() {
   START_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $11}')
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
 
-  # if CET branch, will change as below!
-  [[ "$END_COMMIT" == "7ed918f933a7a4e7c67495033c06e4fe674acfbd" ]] && {
-    KER_SRC="/home/linux_cet"
-  }
+  KER_SRC="$KER_SRC_DEFAULT"
+  # if SPECIFIC COMMIT, will change as below kernel source and commit
+  if [[ -d "$KERNEL_SPECIFIC" ]]; then
+    [[ "$END_COMMIT" == *"$KERNEL_SPECIFIC"* ]] && {
+      KER_SRC="$KERNEL_SPECIFIC"
+    }
+  else
+    print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SCAN_LOG"
+  fi
 
   print_log "bisect_bz.sh -k $KER_SRC -m $END_COMMIT -s $START_COMMIT -d $DEST -p $KEYWORD -i $IMAGE -r ${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" "$SCAN_LOG"
   bisect_bz.sh -k "$KER_SRC" -m "$END_COMMIT" -s "$START_COMMIT" -d "$DEST" -p "$KEYWORD" -i "$IMAGE" -r "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}"
@@ -105,5 +122,23 @@ scan_bisect() {
     sleep 900
   done
 }
+
+  while getopts :k:m:h arg; do
+    case $arg in
+      k)
+        KERNEL_SPECIFIC=$OPTARG
+        ;;
+      m)
+        # END specific commit for develop branch
+        COMMIT_SPECIFIC=$OPTARG
+        ;;
+      h)
+        usage
+        ;;
+      *)
+        usage
+        ;;
+    esac
+  done
 
 scan_bisect

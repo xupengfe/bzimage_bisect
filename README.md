@@ -25,3 +25,6 @@ commit 62fb9874f5da54fdb243003b386128037319b219 (tag: v5.13)
 
 #1    2   3	      4      5         6       7         8     9     10       11       12     13      14     15      16       17       18     19     20
 #HASH des keyword key_ok repro_ker all_ker nker_hash i_tag m_tag i_commit m_commit c_file bi_hash bi_com bi_path rep_time main_res bi_res bad_com bi_comment
+
+# For specific kernel and specific commit
+./scan_bisect.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd"
