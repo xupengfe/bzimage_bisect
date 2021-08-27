@@ -259,9 +259,9 @@ check_time() {
     TIME=$((time+30))
   else
     # For long time to reproduce, add more time to avoid fake judgement
-    TIME=$((time+360))
+    TIME=$((time+600))
   fi
-  print_log "Logic: |<=25: +5|26-30 +30|>31 +360| Set TIME:$TIME" "$BISECT_LOG"
+  print_log "Logic: |<=25: +5|6-30 +30|>31 +600| Set TIME:$TIME" "$BISECT_LOG"
   fill_one_line "rep_time"
 }
 
