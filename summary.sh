@@ -29,6 +29,17 @@ NKER_HASH=""
 I_TAG=""
 M_TAG=""
 
+usage() {
+  cat <<__EOF
+  usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-s START_COMMIT][-h]
+  -k  KERNEL SPECIFIC source folder(optional)
+  -m  COMMIT SPECIFIC END COMMIT ID(optional)
+  -s  START COMMIT(optional)
+  -h  show this
+__EOF
+  exit 1
+}
+
 init_hash_issues() {
   local hash_all=""
   local hash_one=""
@@ -257,17 +268,21 @@ fill_line() {
         return 0
       }
 
-    # for CET branch test
-    [[ "$NKER_HASH" == "cetkvm" ]] && {
-      I_TAG="7ed918f933a7a4e7c67495033c06e4fe674acfbd"
-      M_TAG="36a21d51725af2ce0700c6ebcb6b9594aac658a6"
-      i_commit="7ed918f933a7a4e7c67495033c06e4fe674acfbd"
-      m_commit="36a21d51725af2ce0700c6ebcb6b9594aac658a6"
-      HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
-      print_err "cetkvm branch will fill cet!" "$SUMMARIZE_LOG"
+    # For SPECIFIC COMMIT and branch
+    if [[ -d "$KERNEL_SPECIFIC" ]]; then
+      [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
+        I_TAG="$COMMIT_SPECIFIC"
+        M_TAG="$START_COMMIT"
+        i_commit="$COMMIT_SPECIFIC"
+        m_commit="$START_COMMIT"
+        HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
+        print_err "Specific branch fill END:$COMMIT_SPECIFIC start:$START_COMMIT" "$SUMMARIZE_LOG"
 
-      return 0
-    }
+        return 0
+      }
+    else
+      print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SUMMARIZE_LOG"
+    fi
 
       I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
       if [[ -z "$I_TAG" ]]; then
@@ -404,5 +419,26 @@ summarize_issues() {
   summarize_c
   summarize_no_c
 }
+
+  while getopts :k:m:s:h arg; do
+    case $arg in
+      k)
+        KERNEL_SPECIFIC=$OPTARG
+        ;;
+      m)
+        # END specific commit for develop branch
+        COMMIT_SPECIFIC=$OPTARG
+        ;;
+      s)
+        START_COMMIT=$OPTARG
+        ;;
+      h)
+        usage
+        ;;
+      *)
+        usage
+        ;;
+    esac
+  done
 
 summarize_issues
