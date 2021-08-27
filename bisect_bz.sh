@@ -253,13 +253,15 @@ check_time() {
   time=$(echo "$result" | awk -F " " '{print $2}' | cut -d '.' -f 1)
   print_log "Found time:$time in $dmesg_file" "$BISECT_LOG"
   if [[ "$time" -le 25 ]]; then
-    TIME=$time
+    # Met TIME 0.23s to reproduce, it's better add 5 in 0-25s
+    TIME=$((time+5))
   elif [[ "$time" -le 30 ]]; then
-    TIME=$((time+20))
+    TIME=$((time+30))
   else
+    # For long time to reproduce, add more time to avoid fake judgement
     TIME=$((time+360))
   fi
-  print_log "Logic: |<25:time|25-30 +20|>30 + 360| Set TIME:$TIME" "$BISECT_LOG"
+  print_log "Logic: |<=25: +5|26-30 +30|>31 +360| Set TIME:$TIME" "$BISECT_LOG"
   fill_one_line "rep_time"
 }
 
