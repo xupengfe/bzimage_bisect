@@ -21,6 +21,7 @@ IMAGE="/root/image/centos8_2.img"
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 REP_CPROG="repro.cprog"
 
+# filter needs ISSUES_HASHS of bisect and fill in BISECT_HASHS
 filter_bisect_hashs() {
   local one_hash=""
   local one_hash_content=""
@@ -82,11 +83,13 @@ scan_bisect() {
   local hash=""
 
   while true; do
-
+    # Clean BISECT HASHS list before each loop
+    BISECT_HASHS=""
     summary.sh
     if [[ -e "$SUMMARY_C_CSV" ]]; then
       ISSUE_HASHS=""
       ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | grep repro.cprog | awk -F "," '{print $1}')
+      # filter needs ISSUES_HASHS of bisect and fill in BISECT_HASHS
       filter_bisect_hashs
 
       # list all repro.cprog issues hashs and bisect
