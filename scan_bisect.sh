@@ -112,7 +112,7 @@ scan_bisect() {
     [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]] && result=1
     if [[ "$result" -eq 1 ]]; then
       print_log "Get ker:$KERNEL_SPECIFIC, END commit:$COMMIT_SPECIFIC, start:$SPEC_START_COMMIT" "$SCAN_LOG"
-      summary.sh -k $KERNEL_SPECIFIC -m $COMMIT_SPECIFIC -s $SPEC_START_COMMIT
+      summary.sh -k "$KERNEL_SPECIFIC" -m "$COMMIT_SPECIFIC" -s "$SPEC_START_COMMIT"
     else
       summary.sh
     fi

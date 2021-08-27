@@ -270,6 +270,7 @@ fill_line() {
 
     # For SPECIFIC COMMIT and branch
     [[ -z "$KERNEL_SPECIFIC" ]] || {
+      print_log "Check specific ker: $KERNEL_SPECIFIC" "$SUMMARIZE_LOG"
       if [[ -d "$KERNEL_SPECIFIC" ]]; then
         [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
           I_TAG="$COMMIT_SPECIFIC"
@@ -282,7 +283,7 @@ fill_line() {
           return 0
         }
         # for CET branch
-        [[ "cet_kvm" == "$NKER_HASH" ]] && {
+        [[ "$NKER_HASH" == "cetkvm" ]] && {
           I_TAG="$COMMIT_SPECIFIC"
           M_TAG="$START_COMMIT"
           i_commit="$COMMIT_SPECIFIC"
