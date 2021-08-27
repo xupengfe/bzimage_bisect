@@ -75,9 +75,12 @@ usage() {
   -h  show this
 __EOF
   BI_RESULT="$S_FAIL"
+  [[ -z "$TIME" ]] && fill_one_line "rep_time"
+  [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+  [[ -z "$BI_RESULT" ]] && BI_RESULT="$S_FAIL"
   [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
   BI_COMMENT="Invalid parm in bisect_bz.sh"
-  echo "$ONE_LINE" >> $BISECT_CSV
+
   fill_one_line "bi_result"
   echo "$ONE_LINE" >> $BISECT_CSV
 
@@ -106,6 +109,8 @@ do_cmd() {
   if [[ $result -ne 0 ]]; then
     print_log "$CMD FAIL. Return code is $result" "$BISECT_LOG"
     git bisect log 2>/dev/null >> $BISECT_LOG
+    [[ -z "$TIME" ]] && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="bisect_bz cmd $CMD FAIL:$result"
@@ -231,8 +236,11 @@ check_time() {
 
   [[ -e "$dmesg_file" ]] || {
     print_err "dmesg_file:$dmesg_file does not exist" "$BISECT_LOG"
-    BI_RESULT="$NULL"
-    BAD_COMMIT="$NULL"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+    [[ -z "$BI_RESULT" ]] && BI_RESULT="$S_FAIL"
+    [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="dmesg :$dmesg_file does not exist"
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
@@ -242,7 +250,10 @@ check_time() {
   result=$(cat $dmesg_file | grep "$POINT" | head -n 1)
   [[ -n "$result" ]] || {
     print_err "No $POINT dmesg info:$result" "$BISECT_LOG"
-    BI_RESULT="$NULL"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+    [[ -z "$BI_RESULT" ]] && BI_RESULT="$S_FAIL"
     BAD_COMMIT="$NULL"
     BI_COMMENT="No $POINT find in time check dmesg:$dmesg_file"
     fill_one_line "bi_result"
@@ -287,6 +298,9 @@ prepare_bz() {
     if [[ "$commit" == "$COMMIT" ]]; then
       print_err "END ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
       fill_one_line "rep_time"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
       BI_RESULT="$S_FAIL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
@@ -297,6 +311,9 @@ prepare_bz() {
     fi
     if [[ "$commit" == "$START_COMMIT" ]]; then
       print_err "START ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
       BI_RESULT="$S_FAIL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
@@ -315,11 +332,14 @@ prepare_revert_bz() {
 
   [[ -n "$end_commit" ]] || {
     print_err "prepare bz commit is null:$end_commit" "$BISECT_LOG"
+
     BI_RESULT="$S_FAIL"
     [[ "$BAD_COMMIT" == "$bad_commit" ]] || {
       print_err "revert bz: bad commit is null" "$BISECT_LOG"
       BAD_COMMIT="$BAD_COMMIT -> ${bad_commit}"
     }
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_COMMENT="Revert and end commit $end_commit is null"
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
@@ -337,6 +357,9 @@ prepare_revert_bz() {
   make_res=$(cat $MAKE_RESULT)
   [[ "$make_res" -eq 0 ]] || {
     print_err "Make $end_commit $bad_commit $bzimage failed" "$BISECT_LOG"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
     [[ "$BAD_COMMIT" == "$bad_commit" ]] || {
       print_err "revert bz: bad commit is null" "$BISECT_LOG"
@@ -357,7 +380,11 @@ repro_bz() {
   else
     [[ -e "$REPRO_C" ]] || {
       print_err "$REPRO_C does not exist" "$BISECT_LOG"
-      BI_RESULT="$NULL"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+      [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_RESULT="$S_FAIL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
       BI_COMMENT="$REPRO_C does not exist in vm"
       fill_one_line "bi_result"
@@ -386,7 +413,10 @@ check_bz_result() {
   dmesg_info=$(cat $dmesg_file)
   [[ -n "$dmesg_info" ]] || {
     print_err "$dmesg_file is null:$dmesg_info, could not judge!" "$BISECT_LOG"
-    BI_RESULT="$NULL"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
+    BI_RESULT="$S_FAIL"
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="$dmesg_file is null"
     fill_one_line "bi_result"
@@ -432,6 +462,9 @@ test_bz() {
   check_bz=$(ls "$bz_file" 2>/dev/null)
   if [[ -z "$check_bz" ]]; then
     print_err "bzImage:$bz_file does not exist:$check_bz" "$BISECT_LOG"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="bzImage $bz_file does not exist"
@@ -471,9 +504,11 @@ test_commit() {
     test_bz "${DEST}/bzImage_${commit}" "$commit"
     if [[ -z "$COMMIT_RESULT" ]]; then
       print_err "After test $commit, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
-      BI_RESULT="$NULL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_RESULT="$S_FAIL"
       BI_COMMENT="Test $commit result is null"
       fill_one_line "bi_result"
       echo "$ONE_LINE" >> $BISECT_CSV
@@ -506,9 +541,10 @@ bisect_bz() {
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_err "-END- commit $COMMIT test PASS unexpectedly!" "$BISECT_LOG"
     clean_old_vm
+
     TIME="3600"
     fill_one_line "rep_time"
-    MAIN_RESULT="$NULL"
+    [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
     BAD_COMMIT="$NULL"
     BI_COMMENT="END commit $COMMIT pass unexpectedly"
@@ -528,10 +564,12 @@ bisect_bz() {
     MAIN_RESULT="$S_PASS"
   else
     print_log "Srart commit $COMMIT FAIL, will stop!" "$BISECT_LOG"
-    MAIN_RESULT="$S_FAIL"
+
+    [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
+    [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_RESULT="$S_FAIL"
-    BAD_COMMIT="$NULL"
-    BI_COMMENT="Main line kernel reproduce this issue"
+    MAIN_RESULT="$S_FAIL"
+    BI_COMMENT="Main line kernel reproduced this issue"
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
     clean_old_vm
@@ -559,10 +597,12 @@ bisect_bz() {
     bisect_info=$(git bisect $COMMIT_RESULT $NEXT_COMMIT)
     [[ -n "$bisect_info" ]] || {
       print_err "No bisect_info $bisect_info" "$BISECT_LOG"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
-      BI_RESULT="$NULL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
-      BI_COMMENT="No bisect_info $bisect_info"
+      BI_RESULT="$S_FAIL"
+      BI_COMMENT="No bisect_info in git bisect:$bisect_info"
       fill_one_line "bi_result"
       echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
@@ -590,9 +630,11 @@ bisect_bz() {
       NEXT_COMMIT=$commit
     else
       print_err "$commit is not same as bisect tip commit_c:$commit_c" "$BISECT_LOG"
+
+      [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
-      BI_RESULT="$S_FAIL"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
+      BI_RESULT="$S_FAIL"
       BI_COMMENT="No bisect_info $bisect_info"
       fill_one_line "$commit is not same as tip:$commit_c"
       echo "$ONE_LINE" >> $BISECT_CSV
@@ -630,7 +672,7 @@ verify_bad_commit() {
       print_log "Bisect successfully! $commit_revert bzimage passed!" "$BI_LOG"
 
       BI_RESULT="$S_PASS"
-      BI_COMMENT="Bisect PASS"
+      BI_COMMENT="Bisect and revert bad commit on top PASS!"
       fill_one_line "bi_result"
       echo "$ONE_LINE" >> $BISECT_CSV
     elif [[ "$COMMIT_RESULT" == "$FAIL" ]]; then
@@ -660,7 +702,6 @@ verify_bad_commit() {
 }
 
 # Set detault value
-: "${TIME:=15}"
 : "${NUM:=0}"
 : "${IMAGE:=/root/image/stretch2.img}"
 while getopts :k:m:s:d:p:t:i:n:r:h arg; do
