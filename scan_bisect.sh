@@ -27,6 +27,7 @@ usage() {
   usage: ./${0##*/}  [-k KERNEL][-m COMMIT][-h]
   -k  KERNEL SPECIFIC source folder(optional)
   -m  COMMIT SPECIFIC END COMMIT ID(optional)
+  -s  START COMMIT(optional)
   -h  show this
 __EOF
   exit 1
@@ -105,7 +106,14 @@ scan_bisect() {
   while true; do
     # Clean BISECT HASHS list before each loop
     BISECT_HASHS=""
-    summary.sh
+
+    if [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]]; then
+      print_log "Get ker:$KERNEL_SPECIFIC, END commit:$COMMIT_SPECIFIC, start:$SPEC_START_COMMIT" "$SCAN_LOG"
+      summary.sh -k $KERNEL_SPECIFIC -m $COMMIT_SPECIFIC -s $SPEC_START_COMMIT
+    else
+      summary.sh
+    fi
+
     if [[ -e "$SUMMARY_C_CSV" ]]; then
       ISSUE_HASHS=""
       ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | grep repro.cprog | awk -F "," '{print $1}')
@@ -126,7 +134,7 @@ scan_bisect() {
   done
 }
 
-  while getopts :k:m:h arg; do
+  while getopts :k:m:s:h arg; do
     case $arg in
       k)
         KERNEL_SPECIFIC=$OPTARG
@@ -134,6 +142,9 @@ scan_bisect() {
       m)
         # END specific commit for develop branch
         COMMIT_SPECIFIC=$OPTARG
+        ;;
+      s)
+        SPEC_START_COMMIT=$OPTARG
         ;;
       h)
         usage
