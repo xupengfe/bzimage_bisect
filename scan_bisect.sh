@@ -81,9 +81,10 @@ execute_bisect_cmd() {
   END_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $10}')
   START_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $11}')
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
+  # for rep.c file
+  REP_CPROG=$(echo "$one_hash_content" | awk -F "," '{print $12}')
 
   KER_SRC="$KER_SRC_DEFAULT"
-
   # if SPECIFIC COMMIT, will change as below kernel source and commit
   [[ -z "$KERNEL_SPECIFIC" ]] || {
     if [[ -d "$KERNEL_SPECIFIC" ]]; then
@@ -119,7 +120,10 @@ scan_bisect() {
 
     if [[ -e "$SUMMARY_C_CSV" ]]; then
       ISSUE_HASHS=""
-      ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | grep repro.cprog | awk -F "," '{print $1}')
+      # Only repro.cprog issues bisect
+      #ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | grep repro.cprog | awk -F "," '{print $1}')
+      # all repro.cprog and rep.c issues bisect
+      ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | awk -F "," '{print $1}')
       # filter needs ISSUES_HASHS of bisect and fill in BISECT_HASHS
       filter_bisect_hashs
 
