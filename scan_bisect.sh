@@ -104,8 +104,9 @@ scan_bisect() {
   local result=""
   local hash=""
   local result=0
+  local i=1
 
-  while true; do
+  for ((i=1;;i++)); do
     # Clean BISECT HASHS list before each loop
     BISECT_HASHS=""
 
@@ -137,7 +138,7 @@ scan_bisect() {
     fi
 
     # every 15min to scan
-    print_log "One loop finished, sleep 900" "$SCAN_LOG"
+    print_log "The $i round bisect loop finished, sleep 900" "$SCAN_LOG"
     sleep 900
   done
 }
