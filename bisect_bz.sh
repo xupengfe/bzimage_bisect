@@ -185,6 +185,7 @@ parm_check() {
     BI_COMMENT="No END COMMIT"
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
+    exit 1
   fi
 
   prepare_dmesg_folder
