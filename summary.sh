@@ -436,25 +436,29 @@ summarize_issues() {
   cp -rf "$BISECT_CSV" "$BISECT_BAK"
 }
 
-  while getopts :k:m:s:h arg; do
-    case $arg in
-      k)
-        KERNEL_SPECIFIC=$OPTARG
-        ;;
-      m)
-        # END specific commit for develop branch
-        COMMIT_SPECIFIC=$OPTARG
-        ;;
-      s)
-        START_COMMIT=$OPTARG
-        ;;
-      h)
-        usage
-        ;;
-      *)
-        usage
-        ;;
-    esac
-  done
+# Set detault value
+: "${KERNEL_SPECIFIC:=/home/linux_cet}"
+: "${COMMIT_SPECIFIC:=7ed918f933a7a4e7c67495033c06e4fe674acfbd}"
+: "${START_COMMIT:=36a21d51725af2ce0700c6ebcb6b9594aac658a6}"
+while getopts :k:m:s:h arg; do
+  case $arg in
+    k)
+      KERNEL_SPECIFIC=$OPTARG
+      ;;
+    m)
+      # END specific commit for develop branch
+      COMMIT_SPECIFIC=$OPTARG
+      ;;
+    s)
+      START_COMMIT=$OPTARG
+      ;;
+    h)
+      usage
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
 
 summarize_issues
