@@ -47,7 +47,7 @@ filter_bisect_hashs() {
     for one_hash in $ISSUE_HASHS; do
       # get bisect result column 18, and check it's not null
       one_hash_content=$(cat $SUMMARY_C_CSV | grep $one_hash 2>/dev/null| tail -n 1)
-      bisect_result=$(echo $one_hash_content| awk -F "," '{print $18}')
+      bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
       case $bisect_result in
         null)
           key_check=$(echo $one_hash_content| awk -F "," '{print $4}')
@@ -82,7 +82,7 @@ execute_bisect_cmd() {
   START_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $11}')
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
   # for rep.c file
-  REP_CPROG=$(echo "$one_hash_content" | awk -F "," '{print $12}')
+  REP_CPROG=$(echo "$one_hash_content" | awk -F "," '{print $13}')
 
   KER_SRC="$KER_SRC_DEFAULT"
   # if SPECIFIC COMMIT, will change as below kernel source and commit

@@ -23,8 +23,8 @@ commit 62fb9874f5da54fdb243003b386128037319b219 (tag: v5.13)
 /home/code/bzimage_bisect/make_bz.sh -k /root/os.linux.intelnext.kernel -m eb8b4dd9b2ff8e9dcad191bf178b3c975ab9f702  -b 0e0d00d9ecc57f9886b3784e12a71752035b188f -d /home/bzimage -o /tmp/kernel -f /home/bzimage/bzImage_eb8b4dd9b2ff8e9dcad191bf178b3c975ab9f702_0e0d00d9ecc57f9886b3784e12a71752035b188f_rever
 
 
-#1    2   3	      4      5         6       7         8     9     10       11       12     13      14     15      16       17       18     19     20
-#HASH des keyword key_ok repro_ker all_ker nker_hash i_tag m_tag i_commit m_commit c_file bi_hash bi_com bi_path rep_time main_res bi_res bad_com bi_comment
+#1    2   3	      4      5         6       7         8     9     10       11       12     13      14      15      16       17       18       19     20      21
+#HASH des keyword key_ok repro_ker all_ker nker_hash i_tag m_tag i_commit m_commit ndate  c_file  bi_hash bi_com  bi_path  rep_time main_res bi_res bad_com bi_comment
 
 # For summary.sh
 ./summary.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd" -s "36a21d51725af2ce0700c6ebcb6b9594aac658a6"
