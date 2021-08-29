@@ -88,9 +88,12 @@ execute_bisect_cmd() {
   # if SPECIFIC COMMIT, will change as below kernel source and commit
   [[ -z "$KERNEL_SPECIFIC" ]] || {
     if [[ -d "$KERNEL_SPECIFIC" ]]; then
-      [[ "$END_COMMIT" == *"$KERNEL_SPECIFIC"* ]] && {
+      # Check END_COMMIT should match with COMMIT_SPECIFIC
+      if [[ "$END_COMMIT" == *"$COMMIT_SPECIFIC"* ]]; then
         KER_SRC="$KERNEL_SPECIFIC"
-      }
+      else
+        print_err "END:$END_COMMIT not include specific:$COMMIT_SPECIFIC" "$SCAN_LOG"
+      fi
     else
       print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SCAN_LOG"
     fi
