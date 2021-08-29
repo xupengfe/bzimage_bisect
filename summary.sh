@@ -295,9 +295,6 @@ fill_line() {
 
           return 0
         }
-
-      else
-        print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SUMMARIZE_LOG"
       fi
     }
 
@@ -452,8 +449,16 @@ summarize_c() {
   done
 }
 
+parm_check() {
+  [[ -z "$KERNEL_SPECIFIC" ]] || {
+    [[ -d "$KERNEL_SPECIFIC" ]] || \
+      print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC does not exist!" "$SUMMARIZE_LOG"
+  }
+}
+
 
 summarize_issues() {
+  parm_check
   init_hash_issues
   summarize_c
   summarize_no_c
