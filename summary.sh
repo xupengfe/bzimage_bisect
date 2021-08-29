@@ -272,7 +272,7 @@ fill_line() {
 
     # For SPECIFIC COMMIT and branch
     [[ -z "$KERNEL_SPECIFIC" ]] || {
-      print_log "Check specific kernel: $KERNEL_SPECIFIC" "$SUMMARIZE_LOG"
+      #print_log "Check specific kernel: $KERNEL_SPECIFIC" "$SUMMARIZE_LOG"
       if [[ -d "$KERNEL_SPECIFIC" ]]; then
         [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
           I_TAG="$COMMIT_SPECIFIC"
@@ -280,7 +280,7 @@ fill_line() {
           i_commit="$COMMIT_SPECIFIC"
           m_commit="$START_COMMIT"
           HASH_LINE="${HASH_LINE},${I_TAG},${M_TAG},${i_commit},${m_commit}"
-          print_log "Specific branch fill END:$COMMIT_SPECIFIC start:$START_COMMIT" "$SUMMARIZE_LOG"
+          #print_log "Specific branch fill END:$COMMIT_SPECIFIC start:$START_COMMIT" "$SUMMARIZE_LOG"
 
           return 0
         }
@@ -309,7 +309,7 @@ fill_line() {
           HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL"
           return 0
         }
-        print_log "git fetch origin $I_TAG" "$SUMMARIZE_LOG"
+        # print_log "git fetch origin $I_TAG" "$SUMMARIZE_LOG"
         git fetch origin $I_TAG
         git fetch origin
       fi
