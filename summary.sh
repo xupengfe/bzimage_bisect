@@ -28,6 +28,8 @@ NKERS=""
 NKER_HASH=""
 I_TAG=""
 M_TAG=""
+# the latest report
+REPO=""
 
 usage() {
   cat <<__EOF
@@ -114,7 +116,9 @@ fill_line() {
   local ker=""
   local nker=""
   local new_ker_hash=""
-  local repo=""
+  local ndate=""
+  # latest logX file
+  local log_file=""
 
   cd ${SYZ_FOLDER}/${one_hash}
   case $item_file in
@@ -173,28 +177,6 @@ fill_line() {
         return 0
       fi
 
-      # this way is not correct
-      #fker_content=$(cat report* 2>/dev/null | grep "#" | head -n 1| awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
-      #if [[ -n "$fker_content" ]]; then
-      #  FKER_CONTENT="$fker_content"
-      #  HASH_LINE="${HASH_LINE},${fker_content}"
-      #  return 0
-      #fi
-
-      #fker_content=$(cat repro.report 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
-      #if [[ -n "$fker_content" ]]; then
-      #  FKER_CONTENT="$fker_content"
-      #  HASH_LINE="${HASH_LINE},${fker_content}"
-      #  return 0
-      #fi
-
-      #fker_content=$(cat repro.log 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | head -n 1)
-      #if [[ -n "$fker_content" ]]; then
-      #  FKER_CONTENT="$fker_content"
-      #  HASH_LINE="${HASH_LINE},${fker_content}"
-      #  return 0
-      #fi
-
       fker_content=$(cat repro.log 2>/dev/null | grep Kernel | cut -d ' ' -f 2| head -n 1)
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
@@ -243,11 +225,12 @@ fill_line() {
       ;;
     nker_hash)
       NKER_HASH=""
+      REPO=""
 
       # get latest report file name
-      repo=$(ls -ltra ${SYZ_FOLDER}/${one_hash}/report* 2>/dev/null| tail -n 1 | awk -F "/" '{print $NF}')
-      if [[ -n "$repo" ]]; then
-        nker=$(cat ${SYZ_FOLDER}/${one_hash}/${repo} | grep "Not tainted" | head -n 1 | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
+      REPO=$(ls -ltra ${SYZ_FOLDER}/${one_hash}/report* 2>/dev/null| tail -n 1 | awk -F "/" '{print $NF}')
+      if [[ -n "$REPO" ]]; then
+        nker=$(cat ${SYZ_FOLDER}/${one_hash}/${REPO} | grep "Not tainted" | head -n 1 | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
         if [[ -n "$nker" ]]; then
           new_ker_hash=$(echo $nker | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $NF}')
           [[ -z "$new_ker_hash" ]] && print_err "Solve nker $nker with +| to null:$new_ker_hash"
@@ -255,10 +238,10 @@ fill_line() {
           HASH_LINE="${HASH_LINE},${new_ker_hash}"
           return 0
         else
-          print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${repo} no kernel:$nker" "$SUMMARIZE_LOG"
+          print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${REPO} no kernel:$nker" "$SUMMARIZE_LOG"
         fi
       else
-	      print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${repo} no report!" "$SUMMARIZE_LOG"
+	      print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${REPO} no report!" "$SUMMARIZE_LOG"
       fi
 
       if [[ "$NKERS" == *"bzImage"* ]]; then
@@ -343,6 +326,26 @@ fill_line() {
       m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${m_commit}"
       ;;
+    ndate)
+      if [[ -n "$REPO" ]]; then
+        ndate=$(ls -lt ${SYZ_FOLDER}/${one_hash}/${REPO} \
+                | awk -F " " '{print $6,$7,$8}')
+        HASH_LINE="${HASH_LINE},${ndate}"
+        return 0
+      fi
+
+      log_file=$(ls -ltra ${SYZ_FOLDER}/${one_hash}/log* 2>/dev/null \
+                | tail -n 1 | awk -F "/" '{print $NF}')
+      if [[ -n "$log_file" ]]; then     
+        ndate=$(ls -lt ${SYZ_FOLDER}/${one_hash}/${log_file} \
+                 | awk -F " " '{print $6,$7,$8}')
+        HASH_LINE="${HASH_LINE},${ndate}"
+        return 0
+      else
+        print_err "No report and log file in ${SYZ_FOLDER}/${one_hash}, fill null" "$SUMMARIZE_LOG"
+        HASH_LINE="${HASH_LINE},${NULL}"
+      fi
+      ;;
     c_file)
       if [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
         HASH_LINE="${HASH_LINE},repro.cprog"
@@ -400,6 +403,7 @@ fill_c() {
   fill_line "$hash_one_c" "all_kernels"
   fill_line "$hash_one_c" "nker_hash"
   fill_line "$hash_one_c" "iker_tag_4"
+  fill_line "$hash_one_c" "ndate"
   fill_line "$hash_one_c" "c_file"
   fill_line "$hash_one_c" "bi_8"
   echo "$HASH_LINE" >> $SUMMARY_C_CSV
@@ -420,6 +424,7 @@ fill_no_c() {
   fill_line "$hash_one_no_c" "all_kernels"
   fill_line "$hash_one_no_c" "nker_hash"
   fill_line "$hash_one_no_c" "iker_tag_4"
+  fill_line "$hash_one_no_c" "ndate"
   echo "$HASH_LINE" >> $SUMMARY_NO_C_CSV
 }
 
@@ -427,7 +432,7 @@ summarize_no_c() {
   local hash_one_no_c=""
   local no_c_header=""
 
-  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit"
+  no_c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,ndate"
   echo "$no_c_header" > $SUMMARY_NO_C_CSV
   print_log "----->  No C header: $no_c_header" "$SUMMARIZE_LOG"
   for hash_one_no_c in $HASH_NO_C; do
@@ -439,7 +444,7 @@ summarize_c() {
   local hash_one_c=""
   local c_header=""
 
-  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,c_file,bi_hash,bi_commit,bi_path,rep_time(s),mainline_result,bi_result,bad_commit,bi_comment"
+  c_header="HASH,description,key_word,key_ok,repro_kernel,all_kers,nker_hash,i_tag,m_tag,i_commit,m_commit,ndate,c_file,bi_hash,bi_commit,bi_path,rep_time(s),mainline_result,bi_result,bad_commit,bi_comment"
   echo "$c_header" > $SUMMARY_C_CSV
   print_log "----->  C header:$c_header" "$SUMMARIZE_LOG"
   for hash_one_c in $HASH_C; do
