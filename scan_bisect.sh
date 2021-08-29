@@ -103,6 +103,20 @@ execute_bisect_cmd() {
   bisect_bz.sh -k "$KER_SRC" -m "$END_COMMIT" -s "$START_COMMIT" -d "$DEST" -p "$KEYWORD" -i "$IMAGE" -r "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}"
 }
 
+# Recover bisect csv in /root/image, if not exit and back exist situation
+check_bisect_csv() {
+  if [[ -e "$BISECT_CSV" ]]; then
+    print_log "bisect_csv:$BISECT_CSV exist, check step do nothing" "$SCAN_LOG"
+  else
+    if [[ -e "$BISECT_BAK" ]]; then
+      print_log "$BISECT_CSV not exist, $BISECT_BAK exist, will recover $BISECT_CSV" "$SCAN_LOG"
+      cp -rf $BISECT_BAK $BISECT_CSV
+    else
+      print_log "$BISECT_CSV and $BISECT_BAK doesn't exist, first time scan?" "$SCAN_LOG"
+    fi
+  fi
+}
+
 scan_bisect() {
   local result=""
   local hash=""
@@ -110,6 +124,7 @@ scan_bisect() {
   local i=1
 
   for ((i=1;;i++)); do
+    check_bisect_csv
     # Clean BISECT HASHS list before each loop
     BISECT_HASHS=""
 
