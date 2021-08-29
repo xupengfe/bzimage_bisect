@@ -454,6 +454,7 @@ parm_check() {
     [[ -d "$KERNEL_SPECIFIC" ]] || \
       print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC does not exist!" "$SUMMARIZE_LOG"
   }
+  cat /dev/null > $SUMMARIZE_LOG
 }
 
 
