@@ -108,11 +108,13 @@ fill_line() {
   local des_content=""
   local key_content=""
   local fker_content=""
-  local nkers_content=""
+  local kers_content=""
   local nmac_info=""
+  local kers=""
+  local ker=""
   local nker=""
-  local nkers=""
   local new_ker_hash=""
+  local repo=""
 
   cd ${SYZ_FOLDER}/${one_hash}
   case $item_file in
@@ -214,12 +216,12 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${fker_content}"
       ;;
     all_kernels)
-      nkers_content=""
-      nkers=""
+      kers_content=""
+      kers=""
       NKERS=""
-      nkers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
+      kers_content=$(grep "PID:" report* 2>/dev/null | grep "#" | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}' | uniq)
 
-      [[ -z "$nkers_content" ]] && {
+      [[ -z "$kers_content" ]] && {
         nmac_info=$(ls -ltra machineInfo* 2>/dev/null | awk -F " " '{print $NF}' | tail -n 1)
         [[ -z "$nmac_info" ]] && {
           print_log "All kernels: No ${one_hash}/machineInfo fill $FKER_CONTENT" "$SUMMARIZE_LOG"
@@ -227,20 +229,37 @@ fill_line() {
           HASH_LINE="${HASH_LINE},|${FKER_CONTENT}|"
           return 0
         }
-        nkers_content=$(cat $nmac_info | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}' | uniq)
+        kers_content=$(cat $nmac_info | grep bzImage | awk -F "kernel\" \"" '{print $2}' | awk -F "\"" '{print $1}' | uniq)
       }
 
-      # nkers_content may be several kernels with enter, maybe same, solve them
-      for nker in $nkers_content; do
-        [[ "$nkers" == *"$nker"* ]] && continue
-        nkers="${nkers}|${nker}"
+      # kers_content may be several kernels with enter, maybe same, solve them
+      for ker in $kers_content; do
+        [[ "$kers" == *"$ker"* ]] && continue
+        kers="${kers}|${ker}"
       done
-        nkers="${nkers}|"
-        NKERS=$nkers
-      HASH_LINE="${HASH_LINE},${nkers}"
+        kers="${kers}|"
+        NKERS=$kers
+      HASH_LINE="${HASH_LINE},${kers}"
       ;;
     nker_hash)
       NKER_HASH=""
+
+      # get latest report file name
+      repo=$(ls -ltra ${SYZ_FOLDER}/${one_hash}/report* 2>/dev/null| tail -n 1 | awk -F "/" '{print $NF}')
+      if [[ -n "$repo" ]]; then
+        nker=$(cat ${SYZ_FOLDER}/${one_hash}/${repo} | grep "Not tainted" | head -n 1 | awk -F " #" '{print $(NF-1)}' | awk -F " " '{print $NF}')
+        if [[ -n "$nker" ]]; then
+          new_ker_hash=$(echo $nker | awk -F "+|" '{print $(NF-1)}' 2>/dev/null| awk -F "-" '{print $NF}')
+          [[ -z "$new_ker_hash" ]] && print_err "Solve nker $nker with +| to null:$new_ker_hash"
+          NKER_HASH=$new_ker_hash
+          HASH_LINE="${HASH_LINE},${new_ker_hash}"
+          return 0
+        else
+          print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${repo} no kernel:$nker" "$SUMMARIZE_LOG"
+        fi
+      else
+	      print_log "WARN: ${SYZ_FOLDER}/${one_hash}/${repo} no report!" "$SUMMARIZE_LOG"
+      fi
 
       if [[ "$NKERS" == *"bzImage"* ]]; then
         new_ker_hash=$(echo $NKERS | awk -F "bzImage_" '{print $NF}' | awk -F "|" '{print $1}' | awk -F "_" '{print $NF}')
@@ -270,7 +289,7 @@ fill_line() {
 
     # For SPECIFIC COMMIT and branch
     [[ -z "$KERNEL_SPECIFIC" ]] || {
-      print_log "Check specific ker: $KERNEL_SPECIFIC" "$SUMMARIZE_LOG"
+      print_log "Check specific kernel: $KERNEL_SPECIFIC" "$SUMMARIZE_LOG"
       if [[ -d "$KERNEL_SPECIFIC" ]]; then
         [[ "$COMMIT_SPECIFIC" == *"$NKER_HASH"* ]] && {
           I_TAG="$COMMIT_SPECIFIC"
