@@ -298,13 +298,11 @@ prepare_bz() {
   [[ "$make_res" -eq 0 ]] || {
     if [[ "$commit" == "$COMMIT" ]]; then
       print_err "END ${DEST}/bzImage_${commit} failed, check ${DEST}/${BZ_LOG}" "$BISECT_LOG"
-      fill_one_line "rep_time"
 
       [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
       [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
       [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
       BI_RESULT="$S_FAIL"
-      [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
       BI_COMMENT=$(cat $RESULT_FILE 2>/dev/null)
       fill_one_line "bi_result"
       echo "$ONE_LINE" >> $BISECT_CSV
