@@ -487,7 +487,12 @@ test_bz() {
   sleep "$BOOT_TIME"
 
   repro_bz
-  sleep "$TIME"
+  if [[ -n "$TIME" ]]; then
+    sleep "$TIME"
+  else
+    print_log "No $TIME for first time, sleep 5 for first reproduce time"
+    sleep 5
+  fi
 
   check_bz_result "$bz_file" "${DMESG_FOLDER}/${commit}_dmesg.log" "$commit"
 }
