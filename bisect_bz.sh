@@ -266,14 +266,14 @@ check_time() {
   print_log "Found time:$time in $dmesg_file" "$BISECT_LOG"
   if [[ "$time" -le 25 ]]; then
     # Met TIME 0.23s to reproduce, it's better add 5 in 0-25s
-    TIME=$((time+5))
-  elif [[ "$time" -le 30 ]]; then
-    TIME=$((time+30))
+    TIME=$((time+25))
+  elif [[ "$time" -le 60 ]]; then
+    TIME=$((time+120))
   else
     # For long time to reproduce, add more time to avoid fake judgement
-    TIME=$((time+600))
+    TIME=$((time+1800))
   fi
-  print_log "Logic: |<=25: +5|6-30 +30|>31 +600| Set TIME:$TIME" "$BISECT_LOG"
+  print_log "Logic: |<=25: +25|25-60 +120|>60 +1800| Set TIME:$TIME" "$BISECT_LOG"
   fill_one_line "rep_time"
 }
 
@@ -408,6 +408,7 @@ check_bz_result() {
   local dmesg_info=""
   local cp_result=""
   local i=1
+  local time_check=0
 
   dmesg_info=$(cat $dmesg_file)
   [[ -n "$dmesg_info" ]] || {
@@ -425,19 +426,37 @@ check_bz_result() {
   }
 
   if [[ "$commit" == "$COMMIT" ]]; then
-    print_log "Need to check end commit $COMMIT reproduce time!"
-    for((i=1;i<=MAX_LOOP_TIME;i++)); do
-      sleep $EVERY_LOOP_TIME
+
+    [[ -n "$TIME" ]] && [[ "$TIME" -gt 99 ]] && time_check=1
+
+    # Set a time to debug, which need time > 99s
+    if [[ "$time_check" -eq 1 ]]; then
+      print_log "time_check:$time_check. Set TIME:$TIME >99, will not test reproduce time!"
+      sleep $TIME
 
       cp_result=$(cat $dmesg_file | grep -i "$POINT")
       if [[ -z "$cp_result" ]]; then
-        continue
+        COMMIT_RESULT="$PASS"
       else
         print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
         COMMIT_RESULT="$FAIL"
-        return 0
       fi
-    done
+      return 0
+    else
+      print_log "time_check:$time_check. Need to check end commit $COMMIT reproduce time!"
+      for((i=1;i<=MAX_LOOP_TIME;i++)); do
+        sleep $EVERY_LOOP_TIME
+
+        cp_result=$(cat $dmesg_file | grep -i "$POINT")
+        if [[ -z "$cp_result" ]]; then
+          continue
+        else
+          print_log "$bz_file contained $POINT:$cp_result, FAIL" "$BISECT_LOG"
+          COMMIT_RESULT="$FAIL"
+          return 0
+        fi
+      done
+    fi
     COMMIT_RESULT="$PASS"
     print_log "$dmesg_file not reproduce this issue in 3600s:$bz_file!" "$BISECT_LOG"
   else
