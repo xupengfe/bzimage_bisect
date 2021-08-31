@@ -53,6 +53,9 @@ filter_bisect_hashs() {
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
 
       case $bisect_result in
+        HASH)
+          print_log "Header name is HASH:$bisect_result, skip"
+          ;;
         null)
           key_check=$(echo $one_hash_content| awk -F "," '{print $4}')
           if [[ "$key_check" == "$S_PASS" ]]; then
