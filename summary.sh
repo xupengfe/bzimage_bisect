@@ -338,10 +338,18 @@ fill_line() {
                  | awk -F " " '{print $6,$7,$8}')
         HASH_LINE="${HASH_LINE},${ndate}"
         return 0
-      else
-        print_err "No report and log file in ${SYZ_FOLDER}/${one_hash}, fill null" "$SUMMARIZE_LOG"
-        HASH_LINE="${HASH_LINE},${NULL}"
       fi
+
+      log_file=$(ls -ltra ${SYZ_FOLDER}/${one_hash}/description 2>/dev/null \
+                | tail -n 1 | awk -F "/" '{print $NF}')
+      if [[ -n "$log_file" ]]; then
+        ndate=$(ls -lt ${SYZ_FOLDER}/${one_hash}/${log_file} \
+                 | awk -F " " '{print $6,$7,$8}')
+        HASH_LINE="${HASH_LINE},${ndate}"
+        return 0
+      fi
+      print_err "No report/log/description in ${SYZ_FOLDER}/${one_hash}, fill null!!!" "$SUMMARIZE_LOG"
+      HASH_LINE="${HASH_LINE},${NULL}"
       ;;
     c_file)
       if [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
