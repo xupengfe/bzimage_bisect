@@ -77,7 +77,7 @@ filter_bisect_hashs() {
           ;;
         *)
           print_err "$one_hash bisect_result is invalid, please check!!!" "$SCAN_LOG"
-          ;;        
+          ;;
       esac
     done
   fi
