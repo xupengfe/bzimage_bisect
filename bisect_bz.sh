@@ -288,6 +288,7 @@ prepare_bz() {
 
   if [[ -e "${DEST}/bzImage_${commit}" ]]; then
     print_log "|${DEST}/bzImage_${commit}| exist, no need make" "$BISECT_LOG"
+    echo "0" > $MAKE_RESULT
     return 0
   else
     print_log "|${DEST}/bzImage_${commit}| was not exist, will make it" "$BISECT_LOG"
@@ -347,6 +348,7 @@ prepare_revert_bz() {
 
   if [[ -e "$bzimage" ]]; then
     print_log "$bzimage exist, no need make" "$BISECT_LOG"
+    echo "0" > $MAKE_RESULT
     return 0
   else
     print_log "${BASE_PATH}/make_bz.sh -k $KERNEL_SRC -m $end_commit -b $bad_commit -d $DEST -o $KERNEL_PATH -f $bzimage" "$BISECT_LOG"
