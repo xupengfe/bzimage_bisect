@@ -40,6 +40,9 @@ filter_bisect_hashs() {
   local one_hash_content=""
   local bisect_result=""
   local key_check=""
+  local end_commit=""
+  local bi_hash_content=""
+  local bi_end_commit=""
 
   if [[ -z "$ISSUE_HASHS" ]]; then
     print_log "No any cprog issues in ISSUE_HASH:$ISSUE_HASHS" "$SCAN_LOG"
@@ -48,6 +51,7 @@ filter_bisect_hashs() {
       # get bisect result column 18, and check it's not null
       one_hash_content=$(cat $SUMMARY_C_CSV | grep $one_hash 2>/dev/null| tail -n 1)
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
+
       case $bisect_result in
         null)
           key_check=$(echo $one_hash_content| awk -F "," '{print $4}')
@@ -58,8 +62,18 @@ filter_bisect_hashs() {
             print_log "$one_hash key is fail, skip" "$SCAN_LOG"
           fi
           ;;
-        $S_FAIL|$S_PASS)
-          print_log "$one_hash bisect_result is $bisect_result, no need bisect" "$SCAN_LOG"
+        $S_PASS)
+          print_log "$one_hash bisect_result is $S_PASS, no need bisect" "$SCAN_LOG"
+          ;;
+        $S_FAIL)
+          end_commit=$(echo $one_hash_content| awk -F "," '{print $10}')
+          bi_hash_content=$(cat "$BISECT_CSV" | grep $one_hash 2>/dev/null | tail -n 1)
+          bi_end_commit=$(echo "$bi_hash_content" | awk -F "," '{print $2}')
+          # failed case end commit newer than last time bisect, will bisect again
+          [[ "$end_commit" ==  "$bi_end_commit" ]] || {
+            print_log "end:$end_commit not same as bi:$bi_end_commit, add $one_hash for bisect" "$SCAN_LOG"
+            BISECT_HASHS="$BISECT_HASHS $one_hash"
+          }
           ;;
         *)
           print_err "$one_hash bisect_result is invalid, please check!!!" "$SCAN_LOG"
