@@ -149,15 +149,24 @@ run_syz() {
   run_syzkaller
 }
 
+parm_check() {
+
+  [[ -z "$KERNEL_SRC" ]] && {
+    print_log "No KERNEL_SRC:$KERNEL_SRC, set default: $DEFAULT_KER_SRC" "$RUNSYZ_LOG"
+    KERNEL_SRC=$DEFAULT_KER_SRC
+  }
+
+  [[ -z "$DEST" ]] && DEST=$DEFAULT_DEST
+
+  [[ -z "$IMAGE" ]] && IMAGE=$DEFAULT_IMAGE
+
+}
+
 
 while getopts :k:t:d:i:h arg; do
   case $arg in
     k)
       KERNEL_SRC=$OPTARG
-      [[ -z "$KERNEL_SRC" ]] && {
-        print_log "No KERNEL_SRC:$KERNEL_SRC, set default: $DEFAULT_KER_SRC" "$RUNSYZ_LOG"
-        KERNEL_SRC=$DEFAULT_KER_SRC
-      }
       ;;
     t)
       TAG=$OPTARG
@@ -168,11 +177,9 @@ while getopts :k:t:d:i:h arg; do
       ;;
     d)
       DEST=$OPTARG
-      [[ -z "$DEST" ]] && DEST=$DEFAULT_DEST
       ;;
     i)
       IMAGE=$OPTARG
-      [[ -z "$IMAGE" ]] && IMAGE=$DEFAULT_IMAGE
       ;;
     h)
       usage
@@ -183,4 +190,5 @@ while getopts :k:t:d:i:h arg; do
   esac
 done
 
+parm_check
 run_syz

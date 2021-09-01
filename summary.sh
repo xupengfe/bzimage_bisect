@@ -458,6 +458,15 @@ summarize_c() {
 }
 
 parm_check() {
+  [[ -z "$KERNEL_SPECIFIC" ]] && \
+    KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
+
+  [[ -z "$COMMIT_SPECIFIC" ]] && \
+    COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
+
+  [[ -z "$START_COMMIT" ]] && \
+    START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
+
   [[ -z "$KERNEL_SPECIFIC" ]] || {
     [[ -d "$KERNEL_SPECIFIC" ]] || \
       print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC does not exist!" "$SUMMARIZE_LOG"
@@ -467,7 +476,6 @@ parm_check() {
 
 
 summarize_issues() {
-  parm_check
   init_hash_issues
   summarize_c
   summarize_no_c
@@ -479,20 +487,14 @@ while getopts :k:m:s:h arg; do
     k)
       # KERNEL_SPECIFIC is seperated from KER_SOURCE, could be null
       KERNEL_SPECIFIC=$OPTARG
-      [[ -z "$KERNEL_SPECIFIC" ]] && \
-        KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
       ;;
     m)
       # END specific commit for develop branch, similar as above
       COMMIT_SPECIFIC=$OPTARG
-      [[ -z "$COMMIT_SPECIFIC" ]] && \
-        COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
       ;;
     s)
       # similar as above
       START_COMMIT=$OPTARG
-      [[ -z "$START_COMMIT" ]] && \
-        START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
       ;;
     h)
       usage
@@ -503,4 +505,5 @@ while getopts :k:m:s:h arg; do
   esac
 done
 
+parm_check
 summarize_issues

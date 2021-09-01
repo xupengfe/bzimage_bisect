@@ -178,24 +178,30 @@ scan_bisect() {
   done
 }
 
+parm_check() {
+  [[ -z "$KERNEL_SPECIFIC" ]] && \
+    KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
+
+  [[ -z "$COMMIT_SPECIFIC" ]] && \
+    COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
+
+  [[ -z "$SPEC_START_COMMIT" ]] && \
+    SPEC_START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
+}
+
+
 while getopts :k:m:s:h arg; do
   case $arg in
     k)
       # KERNEL_SPECIFIC is seperated from KER_SOURCE, could be null
       KERNEL_SPECIFIC=$OPTARG
-      [[ -z "$KERNEL_SPECIFIC" ]] && \
-        KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
       ;;
     m)
       # END specific commit for develop branch, similar as above
       COMMIT_SPECIFIC=$OPTARG
-      [[ -z "$COMMIT_SPECIFIC" ]] && \
-        COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
       ;;
     s)
       SPEC_START_COMMIT=$OPTARG
-      [[ -z "$SPEC_START_COMMIT" ]] && \
-        SPEC_START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
       ;;
     h)
       usage
@@ -206,4 +212,5 @@ while getopts :k:m:s:h arg; do
   esac
 done
 
+parm_check
 scan_bisect
