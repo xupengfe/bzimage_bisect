@@ -474,21 +474,25 @@ summarize_issues() {
   cp -rf "$BISECT_CSV" "$BISECT_BAK"
 }
 
-# Set detault value
-: "${KERNEL_SPECIFIC:=/home/linux_cet}"
-: "${COMMIT_SPECIFIC:=7ed918f933a7a4e7c67495033c06e4fe674acfbd}"
-: "${START_COMMIT:=36a21d51725af2ce0700c6ebcb6b9594aac658a6}"
 while getopts :k:m:s:h arg; do
   case $arg in
     k)
+      # KERNEL_SPECIFIC is seperated from KER_SOURCE, could be null
       KERNEL_SPECIFIC=$OPTARG
+      [[ -z "$KERNEL_SPECIFIC" ]] && \
+        KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
       ;;
     m)
-      # END specific commit for develop branch
+      # END specific commit for develop branch, similar as above
       COMMIT_SPECIFIC=$OPTARG
+      [[ -z "$COMMIT_SPECIFIC" ]] && \
+        COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
       ;;
     s)
+      # similar as above
       START_COMMIT=$OPTARG
+      [[ -z "$START_COMMIT" ]] && \
+        START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
       ;;
     h)
       usage

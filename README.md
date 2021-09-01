@@ -26,8 +26,37 @@ commit 62fb9874f5da54fdb243003b386128037319b219 (tag: v5.13)
 #1    2   3	      4      5         6       7         8     9     10       11       12     13      14      15      16       17       18       19     20      21
 #HASH des keyword key_ok repro_ker all_ker nker_hash i_tag m_tag i_commit m_commit ndate  c_file  bi_hash bi_com  bi_path  rep_time main_res bi_res bad_com bi_comment
 
+
+
+================================================================================
+# setup_syz.sh
+# official QEMU and syzkaller
+wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s o
+
+
+# Set up QEMU next and syzkaller with default kernel 5.14-rc6-intel-next tag:0819
+wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i
+
+# Set up QEMU next and syzkaller, run specific kernel tag
+wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i -m "$intel-next_tag"
+
+
+# run_syzkaller.sh
+# If main line, just add intel-next tag
+run_syzkaller.sh $tag
+screen -dmSL bash /root/bzimage_bisect/run_syzkaller.sh "$intel-next_tag"
+# Develop branch
+screen -dmSL bash /root/bzimage_bisect/run_syzkaller.sh "$head_commit"  "$kernel_path"  "$base_mainline_commit"
+
+================================================================================
+
+
 # For summary.sh
 ./summary.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd" -s "36a21d51725af2ce0700c6ebcb6b9594aac658a6"
+# old default for summary
+: "${KERNEL_SPECIFIC:=/home/linux_cet}"
+: "${COMMIT_SPECIFIC:=7ed918f933a7a4e7c67495033c06e4fe674acfbd}"
+: "${START_COMMIT:=36a21d51725af2ce0700c6ebcb6b9594aac658a6}"
 
 # For specific kernel and specific commit
 ./scan_bisect.sh -k "/home/linux_cet" -m "7ed918f933a7a4e7c67495033c06e4fe674acfbd" -s "36a21d51725af2ce0700c6ebcb6b9594aac658a6"

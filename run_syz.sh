@@ -7,7 +7,7 @@ source "bisect_common.sh"
 
 RUN_KERNEL_PATH="/tmp/syzkaller"
 RUN_KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
-RUNSYZ_LOG="runsyz.log"
+RUNSYZ_LOG="/root/runsyz.log"
 RUN_COMMIT=""
 RUNSYZ_FOLDER="/root/bzimage_bisect"
 IMAGE_FOLDER="/root/image"
@@ -150,14 +150,14 @@ run_syz() {
 }
 
 
-# Set detault value
-: "${KERNEL_SRC:=/root/os.linux.intelnext.kernel}"
-: "${DEST:=/home/bzimage}"
-: "${IMAGE:=/root/image/centos8.img}"
 while getopts :k:t:d:i:h arg; do
   case $arg in
     k)
       KERNEL_SRC=$OPTARG
+      [[ -z "$KERNEL_SRC" ]] && {
+        print_log "No KERNEL_SRC:$KERNEL_SRC, set default: $DEFAULT_KER_SRC"
+        KERNEL_SRC=$KERNEL_SRC
+      }
       ;;
     t)
       TAG=$OPTARG
@@ -168,9 +168,11 @@ while getopts :k:t:d:i:h arg; do
       ;;
     d)
       DEST=$OPTARG
+      [[ -z "$DEST" ]] && DEST=$DEFAULT_DEST
       ;;
     i)
       IMAGE=$OPTARG
+      [[ -z "$IMAGE" ]] && IMAGE=$DEFAULT_IMAGE
       ;;
     h)
       usage
