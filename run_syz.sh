@@ -155,8 +155,8 @@ while getopts :k:t:d:i:h arg; do
     k)
       KERNEL_SRC=$OPTARG
       [[ -z "$KERNEL_SRC" ]] && {
-        print_log "No KERNEL_SRC:$KERNEL_SRC, set default: $DEFAULT_KER_SRC"
-        KERNEL_SRC=$KERNEL_SRC
+        print_log "No KERNEL_SRC:$KERNEL_SRC, set default: $DEFAULT_KER_SRC" "$RUNSYZ_LOG"
+        KERNEL_SRC=$DEFAULT_KER_SRC
       }
       ;;
     t)
