@@ -7,7 +7,7 @@ source "bisect_common.sh"
 
 RUN_KERNEL_PATH="/tmp/syzkaller"
 RUN_KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
-RUNSYZ_LOG="/root/runsyz.log"
+RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 RUNSYZ_FOLDER="/root/bzimage_bisect"
 IMAGE_FOLDER="/root/image"
