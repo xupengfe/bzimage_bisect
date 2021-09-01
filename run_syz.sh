@@ -11,6 +11,7 @@ RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 RUNSYZ_FOLDER="/root/bzimage_bisect"
 IMAGE_FOLDER="/root/image"
+DEST_OLD=""
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$RUNSYZ_FOLDER
 cd $BASE_PATH
@@ -122,9 +123,10 @@ run_syz() {
     usage
   }
 
+  DEST_OLD="$DEST"
   DEST="${DEST}/${TAG}"
   [[ -d "$DEST" ]] || {
-    print_log "$DEST folder is not exist, create it"
+    print_log "$DEST folder does not exist, create it"
     print_log "rm -rf $DEST"
     rm -rf $DEST
     mkdir -p $DEST
@@ -144,6 +146,14 @@ run_syz() {
   else
     print_log "Make ${DEST}/bzImage_${RUN_COMMIT}, $KERNEL_SRC -> $RUN_KERNEL_PATH" "$RUNSYZ_LOG"
     ${BASE_PATH}/make_bz.sh -k "$KERNEL_SRC" -m "$RUN_COMMIT" -d "$DEST" -o "$RUN_KERNEL_PATH"
+
+    # Copy run bzImage into upper folder, becasue it will be used for bisect
+    [[ -e "${DEST}/bzImage_${RUN_COMMIT}" ]] && {
+      [[ -e "${DEST_OLD}/bzImage_${RUN_COMMIT}" ]] || {
+        print_log "Copy one to ${DEST_OLD}/bzImage_${RUN_COMMIT}"
+        cp -rf ${DEST}/bzImage_${RUN_COMMIT} ${DEST_OLD}/bzImage_${RUN_COMMIT}
+      }
+    }
   fi
 
   run_syzkaller
