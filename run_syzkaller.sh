@@ -13,16 +13,16 @@ SPECIFIC_KER=$2
 START_COMMIT=$3
 
 update.sh
-print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER -s $START_COMMIT" "$UPDATE_LOG"
+print_log "TAG:$TAG  KER:$SPECIFIC_KER START_COMMIT:$START_COMMIT" "$UPDATE_LOG"
 
 start_scan_service
 
 if [[ -z "$START_COMMIT" ]]; then
   if [[ -n "$SPECIFIC_KER"  ]]; then
-    print_log "$SPECIFIC_KER is not null, but start commit is null:$START_COMMIT" "$UPDATE_LOG"
+    print_err "$SPECIFIC_KER is not null, but start commit is null:$START_COMMIT" "$UPDATE_LOG"
     return 1
   fi
-  echo "run_syz.sh -t $TAG" >> "$UPDATE_LOG"
+  print_log "run_syz.sh -t $TAG" >> "$UPDATE_LOG"
   run_syz.sh -t "$TAG"
 else
   print_log "3 items are filled: $TAG, $SPECIFIC_KER, $START_COMMIT" "$UPDATE_LOG"
