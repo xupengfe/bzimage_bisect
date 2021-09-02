@@ -37,8 +37,11 @@ wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root
 # Set up QEMU next and syzkaller with default kernel 5.14-rc6-intel-next tag:0819
 wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i
 
-# Set up QEMU next and syzkaller, run specific kernel tag
-wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i -m "$intel-next_tag"
+# Set up QEMU next and syzkaller, run specific intel-kernel tag
+wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i -t "$intel-next_tag"
+
+# Set up QEMU next and syzkaller, run specific kernel branch and specific kernel head commit
+wget https://raw.githubusercontent.com/xupengfe/dockt/main/setup_syz.sh -O /root/setup_syz.sh;chmod 755 setup_syz.sh;screen -dmSL bash /root/setup_syz.sh -s i -t "$head_commit" -k "$ker_src" -b "$based_mainline_commit"
 
 
 # run_syzkaller.sh
