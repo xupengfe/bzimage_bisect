@@ -54,7 +54,8 @@ filter_bisect_hashs() {
 
       case $bisect_result in
         HASH)
-          print_log "Header name is HASH:$bisect_result, skip"
+          print_log "Header name is HASH:$bisect_result, continue" "$SCAN_LOG"
+          continue
           ;;
         null)
           key_check=$(echo $one_hash_content| awk -F "," '{print $4}')
