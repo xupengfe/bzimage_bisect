@@ -180,15 +180,19 @@ scan_bisect() {
 }
 
 check_scan_pid() {
-  scan_pid=""
+  local scan_num=""
+  local scan_pid=""
 
+
+  scan_num=$(ps -ef | grep scan_bisect \
+            | grep sh \
+            | wc -l)
   scan_pid=$(ps -ef | grep scan_bisect \
-                  | grep sh \
-                  | awk -F " " '{print $2}' \
-                  | head -n 1)
-
-  [[ -z "$scan_pid" ]] || {
-    print_log "Found scan pid:$scan_pid, will exit" "$SCAN_LOG"
+            | grep sh \
+            | awk -F " " '{print $2}' \
+            | head -n 1)
+  [[ "$scan_num" -le 2 ]] || {
+    print_log "Found scan pid num:$scan_num more than 2 pid:$scan_pid, exit" "$SCAN_LOG"
     exit 1
   }
 }
