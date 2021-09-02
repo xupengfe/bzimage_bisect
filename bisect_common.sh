@@ -31,6 +31,11 @@ MAKE_RESULT="/tmp/makebz_result"
 # Make bz failed short description
 RESULT_FILE="/root/make_bz_short_result.log"
 
+SYZKALLER_LOG="/root/setup_syzkaller.log"
+BZ_PATH="/root/bzimage_bisect"
+SCAN_SCRIPT="scan_bisect.sh"
+SCAN_SRV="scansyz.service"
+
 do_common_cmd() {
   local cmd=$*
   local result=""
@@ -94,6 +99,52 @@ copy_kernel() {
 
   do_common_cmd "rm -rf $ker_tar_path"
   do_common_cmd "cp -rf $ker_src $ker_path"
+}
+
+start_scan_service() {
+  local scan_service="/etc/systemd/system/${SCAN_SRV}"
+  local check_scan_pid=""
+
+  check_scan_pid=$(ps -ef | grep scan_bisect \
+                  | grep sh \
+                  | awk -F " " '{print $2}' \
+                  | head -n 1)
+
+  [[ -e "$scan_service" ]] && [[ -e "/usr/bin/${SCAN_SCRIPT}" ]] && {
+    if [[ -z "$check_scan_pid" ]];then
+      print_log "no $SCAN_SCRIPT pid, will reinstall" "$SYZKALLER_LOG"
+    else
+      print_log "$scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service" "$SYZKALLER_LOG"
+      return 0
+    fi
+  }
+
+  [[ -z "$check_scan_pid" ]] || {
+    print_log "Clean old scan pid:$check_scan_pid" "$SYZKALLER_LOG"
+    kill -9 $check_scan_pid
+  }
+
+  [[ -d "$BZ_PATH" ]] || {
+    print_err "No $BZ_PATH folder!!!" "$SYZKALLER_LOG"
+    return 1
+  }
+
+  print_log "ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}" >> "$SYZKALLER_LOG"
+  rm -rf /usr/bin/${SCAN_SCRIPT}
+  ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}
+
+  echo "[Service]" > $scan_service
+  echo "Type=simple" >> $scan_service
+  echo "ExecStart=${BZ_PATH}/${SCAN_SCRIPT}" >> $scan_service
+  echo "[Install]" >> $scan_service
+  echo "WantedBy=multi-user.target graphical.target" >> $scan_service
+
+  sleep 1
+  systemctl daemon-reload
+  systemctl enable $SCAN_SRV
+  systemctl start $SCAN_SRV
+
+  systemctl status $SCAN_SRV
 }
 
 prepare_kernel() {
