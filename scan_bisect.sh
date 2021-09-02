@@ -178,6 +178,20 @@ scan_bisect() {
   done
 }
 
+check_scan_pid() {
+  scan_pid=""
+
+  scan_pid=$(ps -ef | grep scan_bisect \
+                  | grep sh \
+                  | awk -F " " '{print $2}' \
+                  | head -n 1)
+
+  [[ -z "$scan_pid" ]] || {
+    print_log "Found scan pid:$scan_pid, will exit" "$SCAN_LOG"
+    exit 1
+  }
+}
+
 parm_check() {
   [[ -z "$KERNEL_SPECIFIC" ]] && \
     KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
@@ -212,5 +226,7 @@ while getopts :k:m:s:h arg; do
   esac
 done
 
+# only accept 1 scan pid was executed, otherwise will quit
+check_scan_pid
 parm_check
 scan_bisect
