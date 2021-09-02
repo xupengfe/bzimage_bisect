@@ -20,8 +20,9 @@ start_scan_service() {
     if [[ -z "$check_scan_pid" ]];then
       echo "no $SCAN_SCRIPT pid, will reinstall"
     else
-      echo "$scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service"
-      echo "$scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service" >> "$syzkaller_log"
+      echo "$(date): $scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service"
+      echo "$(date): $scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service" >> "$syzkaller_log"
+      echo "systemctl status $SCAN_SRV"
       return 0
     fi
   }
@@ -37,23 +38,25 @@ start_scan_service() {
     exit 1
   }
 
-  echo "ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}"
+  echo "$(date): ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}"
+  echo "$(date): ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}" >> "$syzkaller_log"
   rm -rf /usr/bin/${SCAN_SCRIPT}
   ln -s ${BZ_PATH}/${SCAN_SCRIPT} /usr/bin/${SCAN_SCRIPT}
 
-echo "[Service]" > $scan_service
-echo "Type=simple" >> $scan_service
-echo "ExecStart=${BZ_PATH}/${SCAN_SCRIPT}" >> $scan_service
-echo "[Install]" >> $scan_service
-echo "WantedBy=multi-user.target graphical.target" >> $scan_service
+  echo "[Service]" > $scan_service
+  echo "Type=simple" >> $scan_service
+  echo "ExecStart=${BZ_PATH}/${SCAN_SCRIPT}" >> $scan_service
+  echo "[Install]" >> $scan_service
+  echo "WantedBy=multi-user.target graphical.target" >> $scan_service
 
-sleep 1
+  sleep 1
 
-systemctl daemon-reload
-systemctl enable $SCAN_SRV
-systemctl start $SCAN_SRV
+  systemctl daemon-reload
+  systemctl enable $SCAN_SRV
+  systemctl start $SCAN_SRV
 
-systemctl status $SCAN_SRV
+  systemctl status $SCAN_SRV
+  echo "systemctl status $SCAN_SRV"
 }
 
 start_scan_service
