@@ -53,9 +53,8 @@ filter_bisect_hashs() {
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
 
       case $bisect_result in
-        HASH)
-          print_log "Header name is HASH:$bisect_result, continue" "$SCAN_LOG"
-          continue
+        bi_res)
+          print_log "Header $one_hash is bi_res:$bisect_result, continue" "$SCAN_LOG"
           ;;
         null)
           key_check=$(echo $one_hash_content| awk -F "," '{print $4}')
