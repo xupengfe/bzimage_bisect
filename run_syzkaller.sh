@@ -14,7 +14,7 @@ START_COMMIT=$3
 
 update.sh
 print_log "TAG:$TAG  KER:$SPECIFIC_KER START_COMMIT:$START_COMMIT" "$UPDATE_LOG"
-
+print_log "start_scan_service" "$UPDATE_LOG"
 start_scan_service
 
 if [[ -z "$START_COMMIT" ]]; then

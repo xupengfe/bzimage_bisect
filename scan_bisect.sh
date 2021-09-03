@@ -53,7 +53,7 @@ filter_bisect_hashs() {
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
 
       case $bisect_result in
-        bi_res)
+        bi_result)
           print_log "Header $one_hash is bi_res:$bisect_result, continue" "$SCAN_LOG"
           ;;
         null)
@@ -79,7 +79,7 @@ filter_bisect_hashs() {
           }
           ;;
         *)
-          print_err "$one_hash bisect_result is invalid, please check!!!" "$SCAN_LOG"
+          print_err "$one_hash bisect_result:$bisect_result is invalid, please check!!!" "$SCAN_LOG"
           ;;
       esac
     done
