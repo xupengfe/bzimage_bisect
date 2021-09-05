@@ -12,6 +12,7 @@ start_scan_service() {
   local check_scan_pid=""
 
   check_scan_pid=$(ps -ef | grep scan_bisect \
+                  | grep -v status \
                   | grep sh \
                   | awk -F " " '{print $2}' \
                   | head -n 1)
