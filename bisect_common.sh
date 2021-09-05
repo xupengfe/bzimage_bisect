@@ -144,7 +144,7 @@ start_scan_service() {
   systemctl enable $SCAN_SRV
   systemctl start $SCAN_SRV
 
-  systemctl status $SCAN_SRV
+  systemctl status $SCAN_SRV &
 }
 
 prepare_kernel() {
