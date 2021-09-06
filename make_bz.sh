@@ -78,10 +78,14 @@ prepare_kconfig() {
   local commit_short=""
   local bad_commit_short=""
   local revert_status=""
+  local http=""
 
   do_cmd "cd $kernel_target_folder"
 
   do_cmd "cp -rf $BASE_PATH/kconfig_kvm.sh ./"
+  source /etc/environment
+  http=$(env | grep http)
+  print_log "http: $http" "$STATUS"
   do_cmd "wget $KCONFIG -O $KCONFIG_NAME"
   #commit_short=$(echo ${COMMIT:0:12})
   #print_log "commit 0-12:$commit_short"
