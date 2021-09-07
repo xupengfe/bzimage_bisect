@@ -143,8 +143,6 @@ start_scan_service() {
   systemctl daemon-reload
   systemctl enable $SCAN_SRV
   systemctl start $SCAN_SRV
-
-  systemctl status $SCAN_SRV &
 }
 
 prepare_kernel() {

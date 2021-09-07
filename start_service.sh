@@ -55,9 +55,6 @@ start_scan_service() {
   systemctl daemon-reload
   systemctl enable $SCAN_SRV
   systemctl start $SCAN_SRV
-
-  systemctl status $SCAN_SRV
-  echo "systemctl status $SCAN_SRV"
 }
 
 start_scan_service
