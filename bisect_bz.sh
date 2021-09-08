@@ -75,6 +75,8 @@ usage() {
   -h  show this
 __EOF
   BI_RESULT="$S_FAIL"
+  # chek ONE_LINE is null, will fill hash_3
+  [[ -z "$ONE_LINE" ]] && fill_one_line "hash_3"
   [[ -z "$TIME" ]] && fill_one_line "rep_time"
   [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
   [[ -z "$BI_RESULT" ]] && BI_RESULT="$S_FAIL"
@@ -109,6 +111,8 @@ do_cmd() {
   if [[ $result -ne 0 ]]; then
     print_log "$CMD FAIL. Return code is $result" "$BISECT_LOG"
     git bisect log 2>/dev/null >> $BISECT_LOG
+    # chek ONE_LINE is null, will fill hash_3
+    [[ -z "$ONE_LINE" ]] && fill_one_line "hash_3"
     [[ -z "$TIME" ]] && fill_one_line "rep_time"
     [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
     BI_RESULT="$S_FAIL"
