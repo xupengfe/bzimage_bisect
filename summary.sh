@@ -476,6 +476,7 @@ parm_check() {
 
 
 summarize_issues() {
+  source /root/.bashrc
   init_hash_issues
   summarize_c
   summarize_no_c
