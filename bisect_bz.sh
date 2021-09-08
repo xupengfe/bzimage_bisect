@@ -130,13 +130,15 @@ prepare_dmesg_folder() {
   local issue_info=""
 
   issue_info=$(echo $POINT | tr ' ' '_')
+  issue_info=$(echo $issue_info | tr "'" '_')
+  issue_info=$(echo $issue_info | tr "/" '_')
   DMESG_FOLDER="${DEST}/${BISECT_START_TIME}_${issue_info}"
   print_log "Prepare $DMESG_FOLDER" "$BISECT_LOG"
   if [[ -e "$DMESG_FOLDER" ]]; then
     do_cmd "rm -rf $DMESG_FOLDER"
-    do_cmd "mkdir -p $DMESG_FOLDER"
+    do_cmd "mkdir -p "$DMESG_FOLDER""
   else
-    do_cmd "mkdir -p $DMESG_FOLDER"
+    do_cmd "mkdir -p "$DMESG_FOLDER""
   fi
 
   if [[ -e "$BISECT_CSV" ]]; then
