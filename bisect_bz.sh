@@ -205,7 +205,8 @@ check_commit() {
   local commit=$1
   local check_result=""
 
-  check_result=$(git log $commit | grep ^commit | head -n 1 2>/dev/null)
+  check_result=$(git log "$commit" | grep "^commit" | head -n 1 2>/dev/null)
+  print_log "git log $commit check_result:$check_result" "$BISECT_LOG"
   [[ -n "$check_result" ]] || {
     print_err "There is no $commit info in $(pwd)" "$BISECT_LOG"
     usage
