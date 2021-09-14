@@ -157,6 +157,7 @@ scan_bisect() {
     fi
 
     if [[ -e "$SUMMARY_C_CSV" ]]; then
+      print_log "-> Check $SUMMARY_C_CSV file" "$SCAN_LOG"
       ISSUE_HASHS=""
       # Only repro.cprog issues bisect
       #ISSUE_HASHS=$(cat "$SUMMARY_C_CSV" | grep repro.cprog | awk -F "," '{print $1}')

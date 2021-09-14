@@ -519,7 +519,7 @@ test_bz() {
   if [[ -n "$TIME" ]]; then
     sleep "$TIME"
   else
-    print_log "No $TIME for first time, sleep 5 for first reproduce time"
+    print_log "No time:$TIME for first time, sleep 5 for first reproduce time"
     sleep 5
   fi
 
