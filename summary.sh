@@ -315,6 +315,11 @@ fill_line() {
 
       M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
       M_TAG="v${M_TAG}"
+      # v5.14-final should change to v5.14
+      [[ "$M_TAG" == *"-final"* ]] && {
+        print_log "Main line:$M_TAG contain -final will remove" "$SUMMARIZE_LOG"
+        M_TAG=$(echo "$M_TAG" | awk -F "-final" '{print $1}')
+      }
       HASH_LINE="${HASH_LINE},${M_TAG}"
 
       i_commit=$(git show "$I_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')

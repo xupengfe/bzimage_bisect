@@ -20,6 +20,7 @@ REPRO="/root/repro.sh"
 REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
+BZ_ORIGIN_LOG="/root/bisect_bz.log"
 
 # need to fill below 4 items in ONE_LINE
 MAIN_RESULT=""
@@ -153,28 +154,28 @@ prepare_dmesg_folder() {
 
 parm_check() {
   [[ -d "$DEST" ]]  || {
-    print_log "DEST:$DEST folder does not exist!"
+    print_log "DEST:$DEST folder does not exist!" "$BZ_ORIGIN_LOG"
     usage
   }
 
   [[ -d "$KERNEL_SRC/.git" ]] || {
-    print_err "$KERNEL_SRC doesn't contain .git folder"
+    print_err "$KERNEL_SRC doesn't contain .git folder" "$BZ_ORIGIN_LOG"
     usage
   }
   [[ -n  "$COMMIT" ]] || {
-    print_err "commit:$COMMIT is null."
+    print_err "commit:$COMMIT is null." "$BZ_ORIGIN_LOG"
     usage
   }
   [[ -n  "$START_COMMIT" ]] || {
-    print_err "Start commit:$START_COMMIT is null."
+    print_err "Start commit:$START_COMMIT is null." "$BZ_ORIGIN_LOG"
     usage
   }
   [[ -n "$POINT" ]] || {
-    print_err "Check point:$POINT is null."
+    print_err "Check point:$POINT is null." "$BZ_ORIGIN_LOG"
     usage
   }
   [[ -e "$IMAGE" ]] || {
-    print_err "IMAGE:$IMAGE does not exist"
+    print_err "IMAGE:$IMAGE does not exist" "$BZ_ORIGIN_LOG"
     usage
   }
   echo $NUM > "$NUM_FILE"
