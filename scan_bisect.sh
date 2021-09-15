@@ -8,6 +8,17 @@ source "bisect_common.sh"
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
 HOST=$(hostname)
 SCAN_LOG="/root/scan_bisect.log"
+
+while true; do
+  if [[ -z "$IP" ]]; then
+    print_err "Could not get IP:$IP, wait 5s to fetch" "$SCAN_LOG"
+    sleep 5
+    IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
+  else
+    print_log "get IP:$IP"
+    break
+  fi
+done
 SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
 ISSUE_HASHS=""
 # Need to know below 4 items to bisect
