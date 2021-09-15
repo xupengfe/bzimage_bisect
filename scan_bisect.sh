@@ -156,7 +156,7 @@ scan_bisect() {
     # Clean BISECT HASHS list before each loop
     BISECT_HASHS=""
 
-    print_log "The $1 round start: update git bzimage_bisect" "$SCAN_LOG"
+    print_log "The $i round start: update git bzimage_bisect" "$SCAN_LOG"
     update.sh
     result=0
     [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]] && result=1
