@@ -488,6 +488,7 @@ parm_check() {
 
 summarize_issues() {
   source /root/.bashrc
+  source $ENVIRONMENT
   init_hash_issues
   summarize_c
   summarize_no_c
