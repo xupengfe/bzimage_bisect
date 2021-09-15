@@ -159,6 +159,7 @@ scan_bisect() {
     print_log "The $i round start: update git bzimage_bisect" "$SCAN_LOG"
     update.sh
     result=0
+    print_log "summarize syzkaller issues csv file"
     [[ -n "$KERNEL_SPECIFIC" ]] && [[ -n "$COMMIT_SPECIFIC" ]] && [[ -n "$SPEC_START_COMMIT" ]] && result=1
     if [[ "$result" -eq 1 ]]; then
       print_log "Get ker:$KERNEL_SPECIFIC, END commit:$COMMIT_SPECIFIC, start:$SPEC_START_COMMIT" "$SCAN_LOG"
