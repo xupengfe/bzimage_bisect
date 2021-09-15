@@ -15,7 +15,7 @@ while true; do
     sleep 5
     IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
   else
-    print_log "get IP:$IP"
+    print_log "get IP:$IP" "$SCAN_LOG"
     break
   fi
 done
