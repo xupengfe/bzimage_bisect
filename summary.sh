@@ -12,7 +12,11 @@ IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '
 HOST=$(hostname)
 SUMMARIZE_LOG="/root/summarize_issues.log"
 SUMMARY_WARN_LOG="/root/warn_summary.log"
-[[ -z "IP" ]] && print_log "WARN: IP:$IP is null" "$SUMMARY_WARN_LOG"
+[[ -z "IP" ]] && {
+  print_log "WARN: IP:$IP is null, sleep 5 to fetch again" "$SUMMARY_WARN_LOG"
+  IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
+  print_log "Fetch IP again:$IP" "$SUMMARY_WARN_LOG"
+}
 SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
 SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 # Hard code SYZ_FOLDER, may be a variable value in the future
