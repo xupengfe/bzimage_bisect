@@ -218,7 +218,7 @@ update_mainline_repro() {
   [[ -z "$ISSUE_HASH" ]] && \
     print_err "ISSUE_HASH:$ISSUE_HASH is null!" "$BISECT_LOG"
   day_file=$(date +%Y_%m_%d)
-  issue_folder="${HTML_FOLDER}/${day_file}/${ISSUE_HASH}"
+  issue_folder="${HTML_FOLDER}/syzkaller/${day_file}/${ISSUE_HASH}"
   if [[ -d "$issue_folder" ]]; then
     print_log "issue_folder alreayd exist:$issue_folder" "$BISECT_LOG"
   else
