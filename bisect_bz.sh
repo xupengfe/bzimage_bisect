@@ -21,6 +21,8 @@ REPRO_SH="repro.sh"
 REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
 BZ_ORIGIN_LOG="/root/bisect_bz.log"
+HTML_FOLDER="/var/www/html/"
+SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 
 # need to fill below 4 items in ONE_LINE
 MAIN_RESULT=""
@@ -28,6 +30,7 @@ BI_RESULT=""
 BAD_COMMIT=""
 BI_COMMENT=""
 ONE_LINE=""
+ISSUE_HASH=""
 # reproduce time should be less or equal than 3600s in theory
 MAX_LOOP_TIME=720
 EVERY_LOOP_TIME=5
@@ -36,16 +39,14 @@ echo $BASE_PATH > $PATH_FILE
 
 fill_one_line() {
   local item=$1
-  local issue_hash=""
 
   case $item in
     hash_3)
-      issue_hash=$(echo "$REPRO_C" | awk -F "/" '{print $(NF-1)}' 2>/dev/null)
-      if [[ -z "$issue_hash" ]]; then
-        print_err "issue_hash:$issue_hash is null!" "$BISECT_LOG"
+      if [[ -z "$ISSUE_HASH" ]]; then
+        print_err "ISSUE_HASH:$ISSUE_HASH is null!" "$BISECT_LOG"
         ONE_LINE="$NULL"
       else
-        ONE_LINE="$issue_hash"
+        ONE_LINE="$ISSUE_HASH"
       fi
       ONE_LINE="$ONE_LINE,$COMMIT,$DMESG_FOLDER"
       ;;
@@ -206,6 +207,50 @@ parm_check() {
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"
+}
+
+update_mainline_repro() {
+  local day_file=""
+  local issue_folder=""
+  local c_file=""
+  local mtag=""
+
+  [[ -z "$ISSUE_HASH" ]] && \
+    print_err "ISSUE_HASH:$ISSUE_HASH is null!" "$BISECT_LOG"
+  day_file=$(date +%Y_%m_%d)
+  issue_folder="${HTML_FOLDER}/${day_file}/${ISSUE_HASH}"
+  if [[ -d "$issue_folder" ]]; then
+    print_log "issue_folder alreayd exist:$issue_folder" "$BISECT_LOG"
+  else
+    do_cmd "rm -rf $issue_folder"
+    do_cmd "mkdir -p $issue_folder"
+  fi
+
+  echo "$TIME" > "${issue_folder}/rep_time"
+
+  c_file=$(echo $REPRO_C | awk -F "/" '{print $NF}' | cut -d '.' -f 1)
+  do_cmd "cp -rf $REPRO_C ${issue_folder}/${c_file}.c"
+
+  print_log "gcc -pthread ${issue_folder}/${c_file}.c -o ${issue_folder}/repro"
+
+  if [[ -e "${SYZ_FOLDER}/${ISSUE_HASH}/description" ]]; then
+    do_cmd "cp -rf ${SYZ_FOLDER}/${ISSUE_HASH}/description $issue_folder"
+  else
+    print_err "${SYZ_FOLDER}/${ISSUE_HASH}/description does not exist!"
+  fi
+
+  echo "$POINT" > "${issue_folder}/keyword"
+
+  do_cmd "cd $KERNEL_SRC"
+  mtag=$(git show-ref --tags --dereference \
+        | grep "$START_COMMIT" \
+        | awk -F "/" '{print $NF}' \
+        | cut -d '^' -f 1)
+  if [[ -z "$mtag" ]]; then
+    print_err "Get $START_COMMIT in $KERNEL_SRC mtag is null"
+  else
+    echo "$mtag" > "${issue_folder}/mtag"
+  fi
 }
 
 check_commit() {
@@ -606,6 +651,7 @@ bisect_bz() {
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
     clean_old_vm
+    update_mainline_repro
     exit 0
   fi
 
@@ -765,6 +811,7 @@ while getopts :k:m:s:d:p:t:i:n:r:h arg; do
       ;;
     r)
       REPRO_C=$OPTARG
+      ISSUE_HASH=$(echo "$REPRO_C" | awk -F "/" '{print $(NF-1)}' 2>/dev/null)
       ;;
     h)
       usage
