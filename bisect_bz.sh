@@ -232,6 +232,7 @@ update_mainline_repro() {
   do_cmd "cp -rf $REPRO_C ${issue_folder}/${c_file}.c"
 
   print_log "gcc -pthread ${issue_folder}/${c_file}.c -o ${issue_folder}/repro"
+  gcc -pthread ${issue_folder}/${c_file}.c -o ${issue_folder}/repro
 
   if [[ -e "${SYZ_FOLDER}/${ISSUE_HASH}/description" ]]; then
     do_cmd "cp -rf ${SYZ_FOLDER}/${ISSUE_HASH}/description $issue_folder"
