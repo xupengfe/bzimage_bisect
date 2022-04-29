@@ -7,7 +7,8 @@ source "bisect_common.sh"
 KCONFIG_NAME="kconfig"
 STATUS=""
 
-KCONFIG="https://raw.githubusercontent.com/xupengfe/kconfig_diff/main/config-5.13i_kvm"
+#KCONFIG="https://raw.githubusercontent.com/xupengfe/kconfig_diff/main/config-5.13i_kvm"
+KCONFIG="https://raw.githubusercontent.com/xupengfe/kconfig_diff/main/config-5.18rc4i_kvm"
 DATE_START=$(date +"$TIME_FMT")
 DATE_SS=$(date +%s)
 DATE_END=""
