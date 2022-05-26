@@ -44,8 +44,18 @@ do_cmd() {
 }
 
 prepare_kernel() {
+  # KERNEL_SRC is KERNEL_SRC=$DEFAULT_KER_SRC or KERNEL_SRC=$OPTARG
   [[ -d "$KERNEL_SRC" ]] || {
-    rm -rf $KERNEL_SRC
+    check=$(echo $KERNEL_SRC | grep "/$")
+    # check whether it's end with / like /root/kernel/
+    if [[ -n "$check" ]]; then
+      upper_folder=$(echo ${KERNEL_SRC%/*/*})
+    else
+      # not end with / like /root/kernel
+      upper_folder=$(echo ${KERNEL_SRC%/*})
+    fi
+    do_cmd "cd $upper_folder"
+    do_cmd "rm -rf $KERNEL_SRC"
     do_cmd "git clone https://github.com/intel-innersource/os.linux.intelnext.kernel.git"
   }
 
