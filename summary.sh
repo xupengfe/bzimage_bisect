@@ -346,6 +346,7 @@ fill_line() {
 
       m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${m_commit}"
+      print_log "i_tag/commit:$I_TAG $i_commit, m_tag/commit:$M_TAG $m_commit" "$SUMMARIZE_LOG"
       ;;
     ndate)
       if [[ -n "$REPO" ]]; then
