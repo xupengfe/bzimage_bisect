@@ -323,7 +323,7 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${I_TAG}"
 
       M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
-      if [[ -z "$M_TAG" ]]; then
+      if [[ -n "$M_TAG" ]]; then
         M_TAG="v${M_TAG}"
         # v5.14-final should change to v5.14
         [[ "$M_TAG" == *"-final"* ]] && {
