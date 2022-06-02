@@ -308,9 +308,12 @@ fill_line() {
       if [[ -z "$I_TAG" ]]; then
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
         [[ -z "$I_TAG" ]] && {
-          print_err "git ls-remote could not get I_TAG with $NKER_HASH in $KER_SOURCE" "$SUMMARIZE_LOG"
-          HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL"
-          return 0
+          I_TAG=$(git show $NKER_HASH | grep commit | cut -d " " -f 2)
+          [[ -z "$I_TAG" ]] && {
+            print_err "git ls-remote could not get I_TAG with $NKER_HASH in $KER_SOURCE" "$SUMMARIZE_LOG"
+            HASH_LINE="${HASH_LINE},$NULL,$NULL,$NULL,$NULL"
+            return 0
+          }
         }
         # print_log "git fetch origin $I_TAG" "$SUMMARIZE_LOG"
         git fetch origin $I_TAG
@@ -320,13 +323,23 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${I_TAG}"
 
       M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
-      M_TAG="v${M_TAG}"
-      # v5.14-final should change to v5.14
-      [[ "$M_TAG" == *"-final"* ]] && {
-        print_log "Main line:$M_TAG contain -final will remove" "$SUMMARIZE_LOG"
-        M_TAG=$(echo "$M_TAG" | awk -F "-final" '{print $1}')
-      }
-      HASH_LINE="${HASH_LINE},${M_TAG}"
+      if [[ -z "$M_TAG" ]]; then
+        M_TAG="v${M_TAG}"
+        # v5.14-final should change to v5.14
+        [[ "$M_TAG" == *"-final"* ]] && {
+          print_log "Main line:$M_TAG contain -final will remove" "$SUMMARIZE_LOG"
+          M_TAG=$(echo "$M_TAG" | awk -F "-final" '{print $1}')
+        }
+        HASH_LINE="${HASH_LINE},${M_TAG}"
+      else
+        [[ -n "$START_COMMIT" ]] && {
+          M_TAG==$(git show "$START_COMMIT" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
+        }
+        [[ -n  "$M_TAG" ]] || {
+          print_log "Could not find M_TAG or commit:$M_TAG" "$SUMMARIZE_LOG"
+          return 0
+        }
+      fi
 
       i_commit=$(git show "$I_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
       HASH_LINE="${HASH_LINE},${i_commit}"
