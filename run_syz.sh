@@ -61,8 +61,8 @@ prepare_kernel() {
 
   do_cmd "cd $KERNEL_SRC"
   print_log "git fetch origin $TAG" "$RUNSYZ_LOG"
-  do_cmd "git fetch origin $TAG"
-  do_cmd "git fetch origin"
+  git fetch origin $TAG
+  git fetch origin
   RUN_COMMIT=$(git log $TAG | head -n 1 | cut -d ' ' -f 2)
   [[ -n "$RUN_COMMIT" ]] || {
     print_err "Get $TAG commit:$RUN_COMMIT null, exit"
