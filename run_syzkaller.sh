@@ -29,6 +29,6 @@ else
   echo $TAG > $ECOM_FILE
   echo $SPECIFIC_KER > $KSRC_FILE
   echo $START_COMMIT > $SCOM_FILE
-  print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER  "$UPDATE_LOG"
+  print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER"  "$UPDATE_LOG"
   run_syz.sh -t "$TAG" -k "$SPECIFIC_KER"
 fi
