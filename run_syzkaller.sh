@@ -26,6 +26,18 @@ if [[ -z "$START_COMMIT" ]]; then
   run_syz.sh -t "$TAG"
 else
   print_log "3 items are filled will fill $SCOM_FILE: $TAG, $SPECIFIC_KER, $START_COMMIT" "$UPDATE_LOG"
+  cd $SPECIFIC_KER
+  tag=$(git show $TAG | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
+  start_commit=$(git show $START_COMMIT | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
+  [[ -n "$tag" ]] && {
+    print_log "END COMMIT: $TAG -> $tag" "$UPDATE_LOG"
+    TAG=$tag
+  }
+
+  [[ -n "$start_commit" ]] && {
+    print_log "START COMMIT:$START_COMMIT -> $start_commit" "$UPDATE_LOG"
+    START_COMMIT=$start_commit
+  }
   echo $TAG > $ECOM_FILE
   echo $SPECIFIC_KER > $KSRC_FILE
   echo $START_COMMIT > $SCOM_FILE
