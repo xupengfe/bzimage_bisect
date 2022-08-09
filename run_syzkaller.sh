@@ -25,10 +25,10 @@ if [[ -z "$START_COMMIT" ]]; then
   print_log "run_syz.sh -t $TAG" >> "$UPDATE_LOG"
   run_syz.sh -t "$TAG"
 else
-  print_log "3 items are filled: $TAG, $SPECIFIC_KER, $START_COMMIT" "$UPDATE_LOG"
+  print_log "3 items are filled will fill $SCOM_FILE: $TAG, $SPECIFIC_KER, $START_COMMIT" "$UPDATE_LOG"
   echo $TAG > $ECOM_FILE
   echo $SPECIFIC_KER > $KSRC_FILE
   echo $START_COMMIT > $SCOM_FILE
-  print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER -s $START_COMMIT" "$UPDATE_LOG"
-  run_syz.sh -t "$TAG" -k "$SPECIFIC_KER" -s "$START_COMMIT"
+  print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER  "$UPDATE_LOG"
+  run_syz.sh -t "$TAG" -k "$SPECIFIC_KER"
 fi
