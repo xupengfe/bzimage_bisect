@@ -27,8 +27,11 @@ if [[ -z "$START_COMMIT" ]]; then
 else
   print_log "3 items are filled will fill $SCOM_FILE: $TAG, $SPECIFIC_KER, $START_COMMIT" "$UPDATE_LOG"
   cd $SPECIFIC_KER
+  git fetch origin
+  sleep 2
   tag=$(git show $TAG | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
   start_commit=$(git show $START_COMMIT | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
+  print_log "First check END COMMIT: $TAG -> $tag" "$UPDATE_LOG"
   [[ -n "$tag" ]] && {
     print_log "END COMMIT: $TAG -> $tag" "$UPDATE_LOG"
     TAG=$tag
