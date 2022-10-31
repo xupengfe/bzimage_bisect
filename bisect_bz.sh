@@ -446,6 +446,8 @@ repro_bz() {
       echo "$ONE_LINE" >> $BISECT_CSV
       exit 1
     }
+    # Some repro binary generated 5G file0 file and no disk space, delete it
+    do_cmd "ssh -o ConnectTimeout=1 -o 'StrictHostKeyChecking no' -p $PORT localhost 'rm -rf file*'"
     do_cmd "scp -o 'StrictHostKeyChecking no' -P $PORT ${BASE_PATH}/${REPRO_SH} root@localhost:/root/${REPRO_SH}"
     sleep 1
     do_cmd "scp -o 'StrictHostKeyChecking no' -P $PORT $REPRO_C root@localhost:/root/$REPRO_C_FILE"
