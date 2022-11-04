@@ -214,13 +214,14 @@ check_scan_pid() {
 }
 
 parm_check() {
-  [[ -z "$KERNEL_SPECIFIC" ]] && \
+  # Will check the file contect with first priority
+  [[ -e "$KSRC_FILE" ]] && \
     KERNEL_SPECIFIC=$(cat $KSRC_FILE 2>/dev/null)
 
-  [[ -z "$COMMIT_SPECIFIC" ]] && \
+  [[ -e "$ECOM_FILE" ]] && \
     COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
 
-  [[ -z "$SPEC_START_COMMIT" ]] && \
+  [[ -e "$SCOM_FILE" ]] && \
     SPEC_START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
 }
 
