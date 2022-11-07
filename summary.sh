@@ -22,7 +22,14 @@ SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
 # Hard code SYZ_FOLDER, may be a variable value in the future
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 # Hard code kernel source, will improve in future
-KER_SOURCE="/root/os.linux.intelnext.kernel"
+if [[ -e "$KSRC_FILE" ]]; then
+  KER_SOURCE=$(cat $KSRC_FILE 2>/dev/null)
+  cd $KER_SOURCE
+  git fetch origin
+else
+  print_log "Error! No $KSRC_FILE file will use /root/os.linux.intelnext.kernel" "$SUMMARIZE_LOG"
+  KER_SOURCE="/root/os.linux.intelnext.kernel"
+fi
 SYZ_REPRO_C="repro.cprog"
 SYZ_REPRO_PROG="repro.prog"
 REP_C="rep.c"
@@ -263,7 +270,9 @@ fill_line() {
       HASH_LINE="${HASH_LINE},${new_ker_hash}"
       ;;
     iker_tag_4)
+      KER_SOURCE=$(cat $KSRC_FILE 2>/dev/null)
       cd $KER_SOURCE
+      git fetch origin
       I_TAG=""
       M_TAG=""
       i_commit=""
@@ -275,6 +284,13 @@ fill_line() {
 
         return 0
       }
+
+      # will always use the COMMIT_SPECIFIC and START_COMMIT
+      [[ -e "$ECOM_FILE" ]] && \
+        COMMIT_SPECIFIC=$(cat $ECOM_FILE 2>/dev/null)
+
+      [[ -e "$SCOM_FILE" ]] && \
+        START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
 
     # For SPECIFIC COMMIT and branch
     [[ -z "$KERNEL_SPECIFIC" ]] || {
@@ -303,8 +319,9 @@ fill_line() {
         }
       fi
     }
-
-      I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
+      # will always use commit id for I_TAG
+      I_TAG="$COMMIT_SPECIFIC"
+      #I_TAG=$(git show-ref --tags  | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
       if [[ -z "$I_TAG" ]]; then
         I_TAG=$(git ls-remote | grep $NKER_HASH | grep "intel" | awk -F "/" '{print $NF}' | tail -n 1)
         [[ -z "$I_TAG" ]] && {
@@ -322,29 +339,40 @@ fill_line() {
 
       HASH_LINE="${HASH_LINE},${I_TAG}"
 
-      M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
-      if [[ -n "$M_TAG" ]]; then
-        M_TAG="v${M_TAG}"
-        # v5.14-final should change to v5.14
-        [[ "$M_TAG" == *"-final"* ]] && {
-          print_log "Main line:$M_TAG contain -final will remove" "$SUMMARIZE_LOG"
-          M_TAG=$(echo "$M_TAG" | awk -F "-final" '{print $1}')
-        }
-        HASH_LINE="${HASH_LINE},${M_TAG}"
-      else
-        [[ -n "$START_COMMIT" ]] && {
-          M_TAG==$(git show "$START_COMMIT" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
-        }
-        [[ -n  "$M_TAG" ]] || {
-          print_log "Could not find M_TAG or commit:$M_TAG" "$SUMMARIZE_LOG"
-          return 0
-        }
-      fi
+      # will always use start commit id for M_TAG
+      M_TAG="$START_COMMIT"
+      HASH_LINE="${HASH_LINE},${M_TAG}"
+      #M_TAG=$(echo "$I_TAG" | awk -F "intel-" '{print $2}' | awk -F "-20" '{print $1}' | tail -n 1)
+      #if [[ -n "$M_TAG" ]]; then
+      #  M_TAG="v${M_TAG}"
+      #  # v5.14-final should change to v5.14
+      #  [[ "$M_TAG" == *"-final"* ]] && {
+      #    print_log "Main line:$M_TAG contain -final will remove" "$SUMMARIZE_LOG"
+      #    M_TAG=$(echo "$M_TAG" | awk -F "-final" '{print $1}')
+      #  }
+      #  HASH_LINE="${HASH_LINE},${M_TAG}"
+      #else
+      #  [[ -n "$START_COMMIT" ]] && {
+      #    M_TAG==$(git show "$START_COMMIT" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
+      #  }
+      #  [[ -n  "$M_TAG" ]] || {
+      #    print_log "Could not find M_TAG or commit:$M_TAG" "$SUMMARIZE_LOG"
+      #    return 0
+      #  }
+      #fi
 
       i_commit=$(git show "$I_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
+      [[ -z "$i_commit" ]] && {
+        print_log "ERROR: i_tag/commit:$I_TAG $i_commit null, will use $COMMIT_SPECIFIC" "$SUMMARIZE_LOG"
+        i_commit=$COMMIT_SPECIFIC
+      }
       HASH_LINE="${HASH_LINE},${i_commit}"
 
       m_commit=$(git show "$M_TAG" | grep "^commit"| head -n 1 | awk -F " " '{print $2}')
+      [[ -z "$m_commit" ]] && {
+        print_log "ERROR: m_tag/commit:$M_TAG $m_commit null will use $START_COMMIT" "$SUMMARIZE_LOG"
+        m_commit=$START_COMMIT
+      }
       HASH_LINE="${HASH_LINE},${m_commit}"
       print_log "i_tag/commit:$I_TAG $i_commit, m_tag/commit:$M_TAG $m_commit" "$SUMMARIZE_LOG"
       ;;
