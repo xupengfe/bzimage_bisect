@@ -121,10 +121,10 @@ execute_bisect_cmd() {
   REP_CPROG=$(echo "$one_hash_content" | awk -F "," '{print $13}')
   if [[ -e "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" ]]; then
     print_log "Check ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} existed." "$SCAN_LOG"
-  else if [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
+  elif [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
     REP_CPROG=repro.cprog
     print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
-  else if [[ -e "${SYZ_FOLDER}/${one_hash}/rep.c" ]]; then
+  elif [[ -e "${SYZ_FOLDER}/${one_hash}/rep.c" ]]; then
     REP_CPROG=rep.c
     print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
   else
