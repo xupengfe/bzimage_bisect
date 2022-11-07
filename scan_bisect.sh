@@ -107,12 +107,33 @@ execute_bisect_cmd() {
   one_hash_content=$(cat $SUMMARY_C_CSV | grep $one_hash 2>/dev/null| tail -n 1)
 
   END_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $10}')
+  [[ -z  "$END_COMMIT" ]]  && {
+    print_err "HASH:$one_hash, END_COMMIT:$END_COMMIT is null! Update end commit" "$SCAN_LOG"
+  }
+  END_COMMIT=$(cat $ECOM_FILE 2>/dev/null)
   START_COMMIT=$(echo "$one_hash_content" | awk -F "," '{print $11}')
+  [[ "$START_COMMIT" == *":"* ]] && {
+    print_err "HASH:$one_hash, START_COMMIT:$START_COMMIT is wrong with:! Update end commit" "$SCAN_LOG"
+  }
+  START_COMMIT=$(cat $SCOM_FILE 2>/dev/null)
   KEYWORD=$(echo "$one_hash_content" | awk -F "," '{print $3}')
   # for rep.c file
   REP_CPROG=$(echo "$one_hash_content" | awk -F "," '{print $13}')
-
-  KER_SRC="$KER_SRC_DEFAULT"
+  if [[ -e "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" ]]; then
+    print_log "Check ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} existed." "$SCAN_LOG"
+  else if [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
+    REP_CPROG=repro.cprog
+    print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
+  else if [[ -e "${SYZ_FOLDER}/${one_hash}/rep.c" ]]; then
+    REP_CPROG=rep.c
+    print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
+  else
+    print_err "HASH:$one_hash, REP_CPROG:$REP_CPROG does not exist, will not execute this hash issue!" "$SCAN_LOG"
+    return 1
+  fi
+  # Will not use default ker src, will use KSRC_FILE content instead
+  # KER_SRC="$KER_SRC_DEFAULT"
+  KER_SRC=$(cat $KSRC_FILE 2>/dev/null)
   # if SPECIFIC COMMIT, will change as below kernel source and commit
   [[ -z "$KERNEL_SPECIFIC" ]] || {
     if [[ -d "$KERNEL_SPECIFIC" ]]; then
@@ -120,7 +141,7 @@ execute_bisect_cmd() {
       if [[ "$END_COMMIT" == *"$COMMIT_SPECIFIC"* ]]; then
         KER_SRC="$KERNEL_SPECIFIC"
       else
-        print_err "END:$END_COMMIT not include specific:$COMMIT_SPECIFIC" "$SCAN_LOG"
+        print_err "END_COMMIT:$END_COMMIT not include specific:$COMMIT_SPECIFIC" "$SCAN_LOG"
       fi
     else
       print_err "KERNEL_SPECIFIC:$KERNEL_SPECIFIC folder does not exist!" "$SCAN_LOG"
