@@ -122,11 +122,11 @@ execute_bisect_cmd() {
   if [[ -e "${SYZ_FOLDER}/${one_hash}/${REP_CPROG}" ]]; then
     print_log "Check ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} existed." "$SCAN_LOG"
   elif [[ -e "${SYZ_FOLDER}/${one_hash}/repro.cprog" ]]; then
+    print_log "HASH:$one_hash, Change $REP_CPROG to existed ${SYZ_FOLDER}/${one_hash}/repro.cprog file!" "$SCAN_LOG"
     REP_CPROG=repro.cprog
-    print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
   elif [[ -e "${SYZ_FOLDER}/${one_hash}/rep.c" ]]; then
+    print_log "HASH:$one_hash, Change $REP_CPROG to existed ${SYZ_FOLDER}/${one_hash}/rep.c file!" "$SCAN_LOG"
     REP_CPROG=rep.c
-    print_log "HASH:$one_hash, Change to existed ${SYZ_FOLDER}/${one_hash}/${REP_CPROG} file!" "$SCAN_LOG"
   else
     print_err "HASH:$one_hash, REP_CPROG:$REP_CPROG does not exist, will not execute this hash issue!" "$SCAN_LOG"
     return 1
