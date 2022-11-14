@@ -54,14 +54,40 @@ filter_bisect_hashs() {
   local end_commit=""
   local bi_hash_content=""
   local bi_end_commit=""
+  local ker_check_src=""
+  local check_commit=""
 
   if [[ -z "$ISSUE_HASHS" ]]; then
     print_log "No any cprog issues in ISSUE_HASH:$ISSUE_HASHS" "$SCAN_LOG"
   else
     for one_hash in $ISSUE_HASHS; do
-      # get bisect result column 18, and check it's not null
+      one_hash_content=""
+      bad_commit=""
+      bisect_result=""
+      check_commit=""
+      # Get bisect result column 19, and check it's not null: bi_result
       one_hash_content=$(cat $SUMMARY_C_CSV | grep $one_hash 2>/dev/null| tail -n 1)
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
+      # Column 20, bisect first bad commit
+      bad_commit=$(echo $one_hash_content| awk -F "," '{print $20}')
+      # If already find bad commit, will not bisect this issue again
+      if [[ "$bad_commit" != "null" ]]; then
+        print_log "$one_hash bad commit $bad_commit is not null" "$SCAN_LOG"
+        ker_check_src=$(cat $MAKE_KSRC 2>/dev/null)
+        [[ -z "$ker_check_src" ]] && {
+           print_log "ERROR:cat $MAKE_KSRC:$ker_check_src is null! Use default!!!" "$SCAN_LOG"
+          # /tmp/kernel/os.linux.intelnext.kernel as previous default
+          ker_check_src="${KERNEL_PATH}/os.linux.intelnext.kernel"
+        }
+        cd $ker_check_src
+        check_commit=$(git show $bad_commit 2>/dev/null | head -n 1)
+        if [[ -z "$check_commit" ]]; then
+          print_log "ERROR:Issue:$one_hash no bad commit:$bad_commit in $ker_check_src" "$SCAN_LOG"
+        else
+          print_log "[INFO]$one_hash find bad commit:$bad_commit, no need bisect" "$SCAN_LOG"
+          continue
+        fi
+      fi
 
       case $bisect_result in
         bi_result)
@@ -80,6 +106,7 @@ filter_bisect_hashs() {
           print_log "$one_hash bisect_result is $S_PASS, no need bisect" "$SCAN_LOG"
           ;;
         $S_FAIL)
+          # column 10: i_commit
           end_commit=$(echo $one_hash_content| awk -F "," '{print $10}')
           bi_hash_content=$(cat "$BISECT_CSV" | grep $one_hash 2>/dev/null | tail -n 1)
           bi_end_commit=$(echo "$bi_hash_content" | awk -F "," '{print $2}')

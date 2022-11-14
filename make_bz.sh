@@ -239,6 +239,8 @@ make_bz_img() {
   parm_check
   # Found the target commit and copy the kernel to UPPER_KERNEL_PATH
   prepare_kernel "$KERNEL_SRC" "$UPPER_KERNEL_PATH" "$COMMIT" "$STATUS"
+  echo "$KERNEL_TARGET_PATH" > $MAKE_KSRC
+  echo "echo $KERNEL_TARGET_PATH > $MAKE_KSRC" >> "$STATUS"
   # Prepare the kconfig and checkout commit and revert action if needed
   prepare_kconfig "$KERNEL_TARGET_PATH" "$BAD_COMMIT"
   make_bzimage "$KERNEL_TARGET_PATH"
