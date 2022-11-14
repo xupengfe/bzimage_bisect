@@ -23,6 +23,7 @@ REPRO_FILE="/root/repro.c"
 BZ_ORIGIN_LOG="/root/bisect_bz.log"
 HTML_FOLDER="/var/www/html/"
 SYZ_FOLDER="/root/syzkaller/workdir/crashes"
+IMAGE_BAK="/root/image/centos8_3.img"
 
 # need to fill below 4 items in ONE_LINE
 MAIN_RESULT=""
@@ -548,6 +549,12 @@ test_bz() {
     echo "$ONE_LINE" >> $BISECT_CSV
     exit 1
   fi
+
+  [[ -e "$IMAGE_BAK" ]] && {
+    print_log "$IMAGE_BAK -> $IMAGE" "$BISECT_LOG"
+    echo y | cp -rf $IMAGE_BAK $IMAGE
+  }
+
   print_log "Run $bz_file with image:$IMAGE in local port:$PORT" "$BISECT_LOG"
   qemu-system-x86_64 \
     -m 2G \
