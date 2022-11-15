@@ -65,6 +65,11 @@ filter_bisect_hashs() {
       bad_commit=""
       bisect_result=""
       check_commit=""
+      if [[ "$one_hash" == *"HASH"* ]]; then
+        print_log "Issue:$one_hash is the header HASH, ignore and continue." "$SCAN_LOG"
+        continue
+      fi
+
       # Get bisect result column 19, and check it's not null: bi_result
       one_hash_content=$(cat $SUMMARY_C_CSV | grep $one_hash 2>/dev/null| tail -n 1)
       bisect_result=$(echo $one_hash_content| awk -F "," '{print $19}')
