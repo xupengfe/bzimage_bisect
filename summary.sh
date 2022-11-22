@@ -190,6 +190,14 @@ fill_line() {
         return 0
       fi
 
+      # Sample "      Not tainted 6.1.0-rc5-094226ad94f4 #1"
+      fker_content=$(grep "Not tainted" repro.report | head -n 1 | awk -F "Not tainted " '{print $2}' | cut -d " " -f 1)
+      if [[ -n "$fker_content" ]]; then
+        FKER_CONTENT="$fker_content"
+        HASH_LINE="${HASH_LINE},${fker_content}"
+        return 0
+      fi
+
       fker_content=$(cat repro.log 2>/dev/null | grep Kernel | cut -d ' ' -f 2| head -n 1)
       if [[ -n "$fker_content" ]]; then
         FKER_CONTENT="$fker_content"
