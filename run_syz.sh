@@ -187,6 +187,13 @@ while getopts :k:t:d:i:h arg; do
   case $arg in
     k)
       KERNEL_SRC=$OPTARG
+      [[ -e "$KERNEL_SRC" ]] || {
+        print_log "No $KERNEL_SRC folder!" "$RUNSYZ_LOG"
+        exit 1
+      }
+      KER_REAL_PATH=$(cd $KERNEL_SRC; pwd)
+      KER_FOLDER_NAME=$(echo $KER_REAL_PATH | awk -F "/" '{print $NF}')
+      RUN_KER_TARGET=${RUN_KERNEL_PATH}/${KER_FOLDER_NAME}
       ;;
     t)
       TAG=$OPTARG
