@@ -647,11 +647,11 @@ bisect_bz() {
   # Check START COMMIT should test PASS, other wise will stop(TODO for next)
   test_commit "$START_COMMIT"
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
-    print_log "Start commit $COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
+    print_log "Start commit $START_COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
     # MAIN LINE RESULT should fill here
     MAIN_RESULT="$S_PASS"
   else
-    print_log "Srart commit $COMMIT FAIL, will stop!" "$BISECT_LOG"
+    print_log "Srart commit $START_COMMIT FAIL, will stop!" "$BISECT_LOG"
 
     [[ -z "$TIME" ]] && TIME="$NULL" && fill_one_line "rep_time"
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
