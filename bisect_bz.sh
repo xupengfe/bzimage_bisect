@@ -679,10 +679,11 @@ bisect_bz() {
     bisect_end=""
 
     [[ "$i" -eq 0 ]] && {
-      print_log "Bisect first start commit:$START_COMMIT"
+      print_log "Bisect first start commit:$START_COMMIT" "$BISECT_LOG"
       NEXT_COMMIT=$START_COMMIT
     }
 
+    print_log "git bisect $COMMIT_RESULT $NEXT_COMMIT" "$BISECT_LOG"
     bisect_info=$(git bisect $COMMIT_RESULT $NEXT_COMMIT)
     [[ -n "$bisect_info" ]] || {
       print_err "No bisect_info $bisect_info" "$BISECT_LOG"
