@@ -658,9 +658,12 @@ bisect_bz() {
     print_log "-END- commit $COMMIT FAIL $COMMIT_RESULT" "$BISECT_LOG"
   fi
 
+  # Whatever it's reproduced or not, will update the repro.c and so on files
+  update_mainline_repro
+
   # Check START COMMIT should test PASS, other wise will stop(TODO for next)
   test_commit "$START_COMMIT"
-  update_mainline_repro
+
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_log "Start commit $START_COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
     # MAIN LINE RESULT should fill here
