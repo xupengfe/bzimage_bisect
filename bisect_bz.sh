@@ -254,7 +254,8 @@ update_mainline_repro() {
 
   echo "$POINT" > "${issue_folder}/keyword"
   echo "$POINT" > "${DMESG_FOLDER}/keyword"
-  do_cmd "wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin"
+  wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin
+  print_log "wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin:$?" "$BISECT_LOG"
 
   do_cmd "cd $KERNEL_SRC"
   mtag=$(git show-ref --tags --dereference \
