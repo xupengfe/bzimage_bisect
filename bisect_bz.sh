@@ -37,6 +37,7 @@ MAX_LOOP_TIME=720
 EVERY_LOOP_TIME=5
 BASE_PATH=$BISECT_SCRIPT_FOLDER
 echo $BASE_PATH > $PATH_FILE
+BI_INFO_LOG=""
 
 fill_one_line() {
   local item=$1
@@ -113,7 +114,11 @@ do_cmd() {
   result=$?
   if [[ $result -ne 0 ]]; then
     print_log "$CMD FAIL. Return code is $result" "$BISECT_LOG"
-    git bisect log 2>/dev/null >> $BISECT_LOG
+    # Bisect all detailed info for debug
+    git bisect log 2>/dev/null >> "$BISECT_LOG"
+    # Short bisect info log to report
+    git bisect log 2>/dev/null >> "$BI_INFO_LOG"
+
     # chek ONE_LINE is null, will fill hash_3
     [[ -z "$ONE_LINE" ]] && fill_one_line "hash_3"
     [[ -z "$TIME" ]] && fill_one_line "rep_time"
@@ -122,7 +127,7 @@ do_cmd() {
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="bisect_bz cmd $CMD FAIL:$result"
     fill_one_line "bi_result"
-    echo "$ONE_LINE" >> $BISECT_CSV
+    echo "$ONE_LINE" >> "$BISECT_CSV"
 
     clean_old_vm
     exit $result
@@ -199,12 +204,14 @@ parm_check() {
 
   prepare_dmesg_folder
   BISECT_LOG="${DMESG_FOLDER}/${BISECT_LOG}"
+  BI_INFO_LOG="${DMESG_FOLDER}/${BI_INFO}"
   BI_LOG="${DEST}/bi.log"
-  cat /dev/null > $BISECT_LOG
-  echo >> $BI_LOG
-  echo "-------------------------------------------------------" >> $BI_LOG
-  echo >> $BI_LOG
-  print_log " $DMESG_FOLDER" >> $BI_LOG
+  cat /dev/null > "$BISECT_LOG"
+  cat /dev/null > "$BI_INFO_LOG"
+  echo  >> "$BI_LOG"
+  echo "-------------------------------------------------------" >> "$BI_LOG"
+  echo >> "$BI_LOG"
+  print_log " $DMESG_FOLDER" >> "$BI_LOG"
 
   print_log "PARM KER:$KERNEL_SRC|END:$COMMIT|start:$START_COMMIT|DEST:$DEST|CP:$POINT|IMG:$IMAGE|TIME:$TIME"
   export PATH="${PATH}:$BASE_PATH"
@@ -228,20 +235,26 @@ update_mainline_repro() {
   fi
 
   echo "$TIME" > "${issue_folder}/rep_time"
+  echo "$TIME" > "${DMESG_FOLDER}/rep_time"
 
   c_file=$(echo $REPRO_C | awk -F "/" '{print $NF}' | cut -d '.' -f 1)
   do_cmd "cp -rf $REPRO_C ${issue_folder}/${c_file}.c"
+  cp -rf "$REPRO_C" "${DMESG_FOLDER}/${c_file}.c"
 
   print_log "gcc -pthread ${issue_folder}/${c_file}.c -o ${issue_folder}/repro"
   gcc -pthread ${issue_folder}/${c_file}.c -o ${issue_folder}/repro
+  gcc -pthread ${issue_folder}/${c_file}.c -o ${DMESG_FOLDER}/repro
 
   if [[ -e "${SYZ_FOLDER}/${ISSUE_HASH}/description" ]]; then
     do_cmd "cp -rf ${SYZ_FOLDER}/${ISSUE_HASH}/description $issue_folder"
+    cp -rf "${SYZ_FOLDER}/${ISSUE_HASH}/description" "${DMESG_FOLDER}/description"
   else
     print_err "${SYZ_FOLDER}/${ISSUE_HASH}/description does not exist!"
   fi
 
   echo "$POINT" > "${issue_folder}/keyword"
+  echo "$POINT" > "${DMESG_FOLDER}/keyword"
+  do_cmd "wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin"
 
   do_cmd "cd $KERNEL_SRC"
   mtag=$(git show-ref --tags --dereference \
@@ -646,6 +659,7 @@ bisect_bz() {
 
   # Check START COMMIT should test PASS, other wise will stop(TODO for next)
   test_commit "$START_COMMIT"
+  update_mainline_repro
   if [[ "$COMMIT_RESULT" == "$PASS" ]]; then
     print_log "Start commit $START_COMMIT PASS $COMMIT_RESULT" "$BISECT_LOG"
     # MAIN LINE RESULT should fill here
@@ -661,7 +675,6 @@ bisect_bz() {
     fill_one_line "bi_result"
     echo "$ONE_LINE" >> $BISECT_CSV
     clean_old_vm
-    update_mainline_repro
     exit 0
   fi
 
@@ -752,13 +765,15 @@ verify_bad_commit() {
 
     if [[ -z "$COMMIT_RESULT" ]]; then
       print_err "After test $commit_revert, result is null:$COMMIT_RESULT" "$BISECT_LOG"
+      print_err "After test $commit_revert, result is null:$COMMIT_RESULT" "$BI_INFO_LOG"
 
       BI_RESULT="$S_FAIL"
       BI_COMMENT="test $commit_revert result is null"
       fill_one_line "bi_result"
-      echo "$ONE_LINE" >> $BISECT_CSV
+      echo "$ONE_LINE" >> "$BISECT_CSV"
     elif [[ "$COMMIT_RESULT" == "$PASS" ]]; then
       print_log "Bisect successfully! $commit_revert bzimage passed!" "$BISECT_LOG"
+      print_log "Bisect successfully! $commit_revert bzimage passed!" "$BI_INFO_LOG"
       print_log "Bisect successfully! $commit_revert bzimage passed!" "$BI_LOG"
 
       BI_RESULT="$S_PASS"
@@ -767,26 +782,28 @@ verify_bad_commit() {
       echo "$ONE_LINE" >> $BISECT_CSV
     elif [[ "$COMMIT_RESULT" == "$FAIL" ]]; then
       print_err "Bisect failed! $commit_revert bzimage failed!" "$BISECT_LOG"
+      print_err "Bisect failed! $commit_revert bzimage failed!" "$BI_INFO_LOG"
       print_err "Bisect failed! $commit_revert bzimage failed!" "$BI_LOG"
 
       BI_RESULT="$S_FAIL"
       BI_COMMENT="Revert $commit_revert test failed"
       fill_one_line "bi_result"
-      echo "$ONE_LINE" >> $BISECT_CSV
+      echo "$ONE_LINE" >> "$BISECT_CSV"
     else
       print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BISECT_LOG"
+      print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BI_INFO_LOG"
       print_err "Invalid Result:$COMMIT_RESULT in $commit_revert" "$BI_LOG"
       BI_RESULT="$S_FAIL"
       BI_COMMENT="Revert step invalid result:$COMMIT_RESULT"
       fill_one_line "bi_result"
-      echo "$ONE_LINE" >> $BISECT_CSV
+      echo "$ONE_LINE" >> "$BISECT_CSV"
     fi
   else
     print_err "Make $revert_bz failed, please check ${DEST}/${BZ_LOG}"
     BI_RESULT="$S_FAIL"
     BI_COMMENT="make revert $revert_bz failed"
     fill_one_line "bi_result"
-    echo "$ONE_LINE" >> $BISECT_CSV
+    echo "$ONE_LINE" >> "$BISECT_CSV"
   fi
   clean_old_vm
 }
