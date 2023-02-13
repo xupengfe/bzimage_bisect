@@ -254,6 +254,9 @@ update_mainline_repro() {
 
   echo "$POINT" > "${issue_folder}/keyword"
   echo "$POINT" > "${DMESG_FOLDER}/keyword"
+
+  # Get the proxy for wget, even wget failed, will not impact bisect
+  source /etc/environment
   wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin
   print_log "wget $KCONFIG_ORI -O ${DMESG_FOLDER}/kconfig_origin:$?" "$BISECT_LOG"
 
