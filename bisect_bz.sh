@@ -723,6 +723,8 @@ bisect_bz() {
       print_log "Bisect PASS: find $bisect_end" "$BISECT_LOG"
       do_cmd "git bisect log >> $BI_LOG"
       do_cmd "git bisect log >> $BISECT_LOG"
+      # Short bisect info log to report
+      git bisect log 2>/dev/null >> "$BI_INFO_LOG"
       BAD_COMMIT=$(echo "$bisect_end" | cut -d ' ' -f 1)
 
       return 0
