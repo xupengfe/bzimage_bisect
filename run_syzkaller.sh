@@ -40,7 +40,7 @@ else
   }
 
   [[ -n "$start_commit" ]] && {
-    print_log "START COMMIT:$START_COMMIT -> $start_commit" "$UPDATE_LOG"
+    print_log "START COMMIT:$START_COMMIT -> $start_commit, TAG_ORI:$TAG_ORI" "$UPDATE_LOG"
     START_COMMIT=$start_commit
   }
   echo "$TAG" > "$ECOM_FILE"
