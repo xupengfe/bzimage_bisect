@@ -88,7 +88,7 @@ check_backup() {
   else
     # This TAG already changed to END_COMMIT already
     if [[ "$TAG" == "$pre_end_commit" ]]; then
-      print_log "End commit:$TAG is same as previous:$pre_end_commit" "$UPDATE_LOG"
+      print_log "End commit:$TAG is same as previous:$pre_end_commit. Do nothing." "$UPDATE_LOG"
     else
       print_log "End commit:$TAG is not previous:$pre_end_commit, backup." "$UPDATE_LOG"
       move_pre_csv_crashes "$pre_ker_src" "$pre_end_commit" "$pre_end_tag"
@@ -130,6 +130,11 @@ else
     print_log "START COMMIT:$START_COMMIT -> $start_commit, TAG_ORI:$TAG_ORI" "$UPDATE_LOG"
     START_COMMIT=$start_commit
   }
+  cp -rf "$ECOM_FILE" "pre_${ECOM_FILE}"
+  cp -rf "$TAG_ORIGIN" "pre_${TAG_ORIGIN}"
+  cp -rf "$KSRC_FILE" "pre_${KSRC_FILE}"
+  cp -rf "$SCOM_FILE" "pre_${SCOM_FILE}"
+
   echo "$TAG" > "$ECOM_FILE"
   echo "$TAG_ORI" > "$TAG_ORIGIN"
   echo "$SPECIFIC_KER" > "$KSRC_FILE"
