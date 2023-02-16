@@ -18,8 +18,13 @@ readonly KSRC_FILE="/opt/ker_src"
 readonly ECOM_FILE="/opt/end_commit"
 readonly SCOM_FILE="/opt/start_commit"
 readonly TAG_ORIGIN="/opt/tag_origin"
+readonly PRE_KSRC_FILE="/opt/pre_ker_src"
+readonly PRE_ECOM_FILE="/opt/pre_end_commit"
+readonly PRE_SCOM_FILE="/opt/pre_start_commit"
+readonly PRE_TAG_ORIGIN="/opt/pre_tag_origin"
 readonly MAKE_KSRC="/opt/ker_make"
 readonly ENVIRONMENT="/etc/environment"
+readonly BACKUP_CSV="/root/csv"
 # Real make bzImage kernel src path
 readonly KERNEL_PATH="/tmp/kernel"
 # Hard code SYZ_WORKDIR, may be a variable value in the future
