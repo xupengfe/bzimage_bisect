@@ -30,7 +30,6 @@ KER_SRC_DEFAULT="/root/os.linux.intelnext.kernel"
 KER_SRC=""
 DEST="/home/bzimage"
 IMAGE="/root/image/centos8_2.img"
-SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 REP_CPROG="repro.cprog"
 
 usage() {

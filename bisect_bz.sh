@@ -22,7 +22,6 @@ REPRO_C_FILE="repro.c"
 REPRO_FILE="/root/repro.c"
 BZ_ORIGIN_LOG="/root/bisect_bz.log"
 HTML_FOLDER="/var/www/html/"
-SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 IMAGE_BAK="/root/image/centos8_3.img"
 
 # need to fill below 4 items in ONE_LINE

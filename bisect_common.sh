@@ -6,11 +6,14 @@ readonly SKIP="skip"
 readonly NULL="null"
 readonly S_PASS="pass"
 readonly S_FAIL="fail"
-readonly BISECT_CSV="/root/image/bisect.csv"
+# Hard code IMAGE_FOLDER, may be a variable value in the future
+readonly IMAGE_FOLDER="/root/image"
+readonly BI_CSV="bisect.csv"
+readonly BISECT_CSV="${IMAGE_FOLDER}/${BI_CSV}"
 readonly BISECT_BAK="/opt/bisect_bak.csv"
 readonly DEFAULT_KER_SRC="/root/os.linux.intelnext.kernel"
 readonly DEFAULT_DEST="/home/bzimage"
-readonly DEFAULT_IMAGE="/root/image/centos8.img"
+readonly DEFAULT_IMAGE="${IMAGE_FOLDER}/centos8.img"
 readonly KSRC_FILE="/opt/ker_src"
 readonly ECOM_FILE="/opt/end_commit"
 readonly SCOM_FILE="/opt/start_commit"
@@ -19,6 +22,9 @@ readonly MAKE_KSRC="/opt/ker_make"
 readonly ENVIRONMENT="/etc/environment"
 # Real make bzImage kernel src path
 readonly KERNEL_PATH="/tmp/kernel"
+# Hard code SYZ_WORKDIR, may be a variable value in the future
+readonly SYZ_WORKDIR="/root/syzkaller/workdir"
+
 PATH_FILE="/tmp/base_path"
 [[ -e "$PATH_FILE" ]] && BASE_PATH=$(cat $PATH_FILE)
 TIME_FMT="%m%d_%H%M%S"
@@ -35,6 +41,8 @@ BI_LOG=""
 MAKE_RESULT="/tmp/makebz_result"
 # Make bz failed short description
 RESULT_FILE="/root/make_bz_short_result.log"
+
+export SYZ_FOLDER="${SYZ_WORKDIR}/crashes"
 
 SYZKALLER_LOG="/root/setup_syzkaller.log"
 BZ_PATH="/root/bzimage_bisect"

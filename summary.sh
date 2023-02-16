@@ -19,8 +19,6 @@ SUMMARY_WARN_LOG="/root/warn_summary.log"
 }
 SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
 SUMMARY_NO_C_CSV="/root/summary_no_c_${IP}_${HOST}.csv"
-# Hard code SYZ_FOLDER, may be a variable value in the future
-SYZ_FOLDER="/root/syzkaller/workdir/crashes"
 # Hard code kernel source, will improve in future
 if [[ -e "$KSRC_FILE" ]]; then
   KER_SOURCE=$(cat $KSRC_FILE 2>/dev/null)

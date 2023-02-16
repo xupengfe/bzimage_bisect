@@ -10,7 +10,6 @@ RUN_KER_TARGET="/tmp/syzkaller/os.linux.intelnext.kernel"
 RUNSYZ_LOG="runsyz.log"
 RUN_COMMIT=""
 RUNSYZ_FOLDER="/root/bzimage_bisect"
-IMAGE_FOLDER="/root/image"
 DEST_OLD=""
 MY_CFG="${IMAGE_FOLDER}/my.cfg"
 BASE_PATH=$RUNSYZ_FOLDER
