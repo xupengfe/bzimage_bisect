@@ -14,6 +14,7 @@ readonly DEFAULT_IMAGE="/root/image/centos8.img"
 readonly KSRC_FILE="/opt/ker_src"
 readonly ECOM_FILE="/opt/end_commit"
 readonly SCOM_FILE="/opt/start_commit"
+readonly TAG_ORIGIN="/opt/tag_origin"
 readonly MAKE_KSRC="/opt/ker_make"
 readonly ENVIRONMENT="/etc/environment"
 # Real make bzImage kernel src path

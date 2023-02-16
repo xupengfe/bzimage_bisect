@@ -11,6 +11,7 @@ TAG=$1
 # Specific kernel source folder path on target platform
 SPECIFIC_KER=$2
 START_COMMIT=$3
+TAG_ORI="$TAG"
 
 update.sh
 print_log "TAG:$TAG  KER:$SPECIFIC_KER START_COMMIT:$START_COMMIT" "$UPDATE_LOG"
@@ -29,6 +30,7 @@ else
   cd $SPECIFIC_KER
   git fetch origin
   sleep 2
+  # tag means end commit id
   tag=$(git show $TAG | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
   start_commit=$(git show $START_COMMIT | grep "^commit" | head -n 1 | awk -F " " '{print $NF}')
   print_log "First check END COMMIT: $TAG -> $tag" "$UPDATE_LOG"
@@ -41,9 +43,10 @@ else
     print_log "START COMMIT:$START_COMMIT -> $start_commit" "$UPDATE_LOG"
     START_COMMIT=$start_commit
   }
-  echo $TAG > $ECOM_FILE
-  echo $SPECIFIC_KER > $KSRC_FILE
-  echo $START_COMMIT > $SCOM_FILE
+  echo "$TAG" > "$ECOM_FILE"
+  echo "$TAG_ORI" > "$TAG_ORIGIN"
+  echo "$SPECIFIC_KER" > "$KSRC_FILE"
+  echo "$START_COMMIT" > "$SCOM_FILE"
   print_log "run_syz.sh -t $TAG -k $SPECIFIC_KER"  "$UPDATE_LOG"
   run_syz.sh -t "$TAG" -k "$SPECIFIC_KER"
 fi
