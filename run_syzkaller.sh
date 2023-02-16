@@ -20,20 +20,22 @@ move_pre_csv_crashes() {
   local pre_end_tag=$3
 
   if [[ -z "$pre_end_tag" ]]; then
-    print_log "No end tag will use end commit: mkdir ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"
+    print_log "No end tag will use end commit: mkdir ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"  "$UPDATE_LOG"
     # Previous backup is useless and clean to make sure next move successfully
     rm -rf "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"
-    mkdir -p "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"
-    mv "${SYZ_FOLDER}/*"  "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"
+    print_log "mv ${SYZ_FOLDER}  ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}" "$UPDATE_LOG"
+    mv "${SYZ_FOLDER}"  "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_commit}"
+    mkdir -p "${SYZ_FOLDER}"
 
     # Move BI_CSV under IMAGE_FOLDER
     mv "$BISECT_CSV" "${IMAGE_FOLDER}/${BI_CSV}${pre_ker_src}_${pre_end_commit}"
     head -n 1 "${IMAGE_FOLDER}/${BI_CSV}${pre_ker_src}_${pre_end_commit}" > "$BISECT_CSV"
   else
-    print_log "Has end tag:$pre_end_tag, mkdir ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}"
+    print_log "Has end tag:$pre_end_tag, mkdir ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}" "$UPDATE_LOG"
     rm -rf "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}"
-    mkdir -p "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}"
-    mv "${SYZ_FOLDER}/*"  "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}"
+    print_log "mv ${SYZ_FOLDER}  ${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}" "$UPDATE_LOG"
+    mv "${SYZ_FOLDER}"  "${SYZ_WORKDIR}/crashes_${pre_ker_src}_${pre_end_tag}"
+    mkdir -p "${SYZ_FOLDER}"
 
     # Move BI_CSV under IMAGE_FOLDER
     mv "$BISECT_CSV" "${IMAGE_FOLDER}/${BI_CSV}${pre_ker_src}_${pre_end_tag}"
@@ -43,22 +45,22 @@ move_pre_csv_crashes() {
 
 recover_pre_match_csv_crashes() {
   [[ -d "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG_ORI}" ]] && {
-    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG_ORI} exist, will copy"
+    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG_ORI} exist, will copy"  "$UPDATE_LOG"
     cp -rf "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG_ORI}" "${SYZ_FOLDER}"
   }
 
   [[ -d "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG}" ]] && {
-    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG} exist, will copy"
+    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG} exist, will copy"  "$UPDATE_LOG"
     cp -rf "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG}" "${SYZ_FOLDER}"
   }
 
   if [[ -e "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG_ORI}" ]]; then
-    print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG_ORI} exist, will copy"
+    print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG_ORI} exist, will copy"  "$UPDATE_LOG"
     cp -rf "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG_ORI}" "$BISECT_CSV"
   else
     # Only tag csv doesn't exist, will copy the commit id csv to recover
     [[ -e "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG}" ]] && {
-      print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG} exist, will copy"
+      print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG} exist, will copy"  "$UPDATE_LOG"
       cp -rf "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG}" "$BISECT_CSV"
     }
   fi
