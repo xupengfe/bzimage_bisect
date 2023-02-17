@@ -120,8 +120,13 @@ filter_bisect_hashs() {
             BISECT_HASHS="$BISECT_HASHS $one_hash"
           }
           ;;
+        $S_REBI)
+          print_log "$one_hash bisect_result:$bisect_result is $S_REBI unexpected, will rebisect!" "$SCAN_LOG"
+          BISECT_HASHS="$BISECT_HASHS $one_hash"
+          ;;
         *)
-          print_err "$one_hash bisect_result:$bisect_result is invalid, please check!!!" "$SCAN_LOG"
+          print_err "$one_hash bisect_result:$bisect_result is invalid, rebisect, please check!!!" "$SCAN_LOG"
+          BISECT_HASHS="$BISECT_HASHS $one_hash"
           ;;
       esac
     done

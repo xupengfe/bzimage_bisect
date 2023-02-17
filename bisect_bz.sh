@@ -122,7 +122,7 @@ do_cmd() {
     [[ -z "$ONE_LINE" ]] && fill_one_line "hash_3"
     [[ -z "$TIME" ]] && fill_one_line "rep_time"
     [[ -z "$MAIN_RESULT" ]] && MAIN_RESULT="$NULL"
-    BI_RESULT="$S_FAIL"
+    BI_RESULT="$S_REBI"
     [[ -z "$BAD_COMMIT" ]] && BAD_COMMIT="$NULL"
     BI_COMMENT="bisect_bz cmd $CMD FAIL:$result"
     fill_one_line "bi_result"
