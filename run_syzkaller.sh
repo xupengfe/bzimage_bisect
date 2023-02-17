@@ -133,8 +133,8 @@ check_summary_csv_backup() {
 # run_syzkaller.sh start from here
 update.sh
 print_log "TAG:$TAG  KER:$SPECIFIC_KER START_COMMIT:$START_COMMIT" "$UPDATE_LOG"
-print_log "start_scan_service" "$UPDATE_LOG"
-start_scan_service
+print_log "start_scan_service $FORCE" "$UPDATE_LOG"
+start_scan_service "$FORCE"
 
 if [[ -z "$START_COMMIT" ]]; then
   if [[ -n "$SPECIFIC_KER"  ]]; then

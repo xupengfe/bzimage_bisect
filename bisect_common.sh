@@ -30,6 +30,7 @@ readonly BACKUP_CSV="/root/csv"
 readonly KERNEL_PATH="/tmp/kernel"
 # Hard code SYZ_WORKDIR, may be a variable value in the future
 readonly SYZ_WORKDIR="/root/syzkaller/workdir"
+readonly FORCE="force"
 
 PATH_FILE="/tmp/base_path"
 [[ -e "$PATH_FILE" ]] && BASE_PATH=$(cat $PATH_FILE)
@@ -121,6 +122,7 @@ copy_kernel() {
 }
 
 start_scan_service() {
+  local parm=$1
   local scan_service="/etc/systemd/system/${SCAN_SRV}"
   local check_scan_pid=""
 
@@ -132,6 +134,10 @@ start_scan_service() {
   [[ -e "$scan_service" ]] && [[ -e "/usr/bin/${SCAN_SCRIPT}" ]] && {
     if [[ -z "$check_scan_pid" ]];then
       print_log "no $SCAN_SCRIPT pid, will reinstall" "$SYZKALLER_LOG"
+    elif [[ "$parm" == "$FORCE" ]]; then
+      print_log "start_scan_service parm:$parm, will restart $SCAN_SRV " "$SYZKALLER_LOG"
+      systemctl restart $SCAN_SRV
+      return 0
     else
       print_log "$scan_service & /usr/bin/$SCAN_SCRIPT and pid:$SCAN_SCRIPT exist, no need reinstall $SCAN_SRV service" "$SYZKALLER_LOG"
       return 0
