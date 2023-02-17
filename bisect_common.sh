@@ -6,6 +6,7 @@ readonly SKIP="skip"
 readonly NULL="null"
 readonly S_PASS="pass"
 readonly S_FAIL="fail"
+readonly S_REBI="rebisect"
 # Hard code IMAGE_FOLDER, may be a variable value in the future
 readonly IMAGE_FOLDER="/root/image"
 readonly BI_CSV="bisect.csv"
