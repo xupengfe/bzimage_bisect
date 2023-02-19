@@ -15,6 +15,8 @@ END_COMMIT=""
 IP=$(ip a | grep inet | grep brd | grep dyn | awk -F " " '{print $2}' | cut -d '/' -f 1)
 HOST=$(hostname)
 SUMMARY_C_CSV="/root/summary_c_${IP}_${HOST}.csv"
+# use _ instead of / for csv or crashes foder name usage
+KER_SRC_PATH=""
 
 # Backup previous test results and clean for new test commit kernel
 move_pre_csv_crashes() {
@@ -47,26 +49,30 @@ move_pre_csv_crashes() {
 }
 
 recover_pre_match_csv_crashes() {
-  [[ -d "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG}" ]] && {
-    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG} exist, will copy"  "$UPDATE_LOG"
-    cp -rf "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${TAG}" "${SYZ_FOLDER}"
+  [[ -d "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${TAG}" ]] && {
+    print_log "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${TAG} exist, will copy"  "$UPDATE_LOG"
+    cp -rf "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${TAG}" "${SYZ_FOLDER}"
   }
 
-  [[ -d "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${END_COMMIT}" ]] && {
-    print_log "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${END_COMMIT} exist, will copy"  "$UPDATE_LOG"
-    cp -rf "${SYZ_WORKDIR}/crashes_${SPECIFIC_KER}_${END_COMMIT}" "${SYZ_FOLDER}"
+  [[ -d "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${END_COMMIT}" ]] && {
+    print_log "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${END_COMMIT} exist, will copy"  "$UPDATE_LOG"
+    cp -rf "${SYZ_WORKDIR}/crashes_${KER_SRC_PATH}_${END_COMMIT}" "${SYZ_FOLDER}"
   }
 
-  if [[ -e "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG}" ]]; then
-    print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG} exist, will copy"  "$UPDATE_LOG"
-    cp -rf "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${TAG}" "$BISECT_CSV"
+  if [[ -e "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${TAG}" ]]; then
+    print_log "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${TAG} exist, will copy"  "$UPDATE_LOG"
+    cp -rf "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${TAG}" "$BISECT_CSV"
   else
     # Only tag csv doesn't exist, will copy the commit id csv to recover
-    [[ -e "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${END_COMMIT}" ]] && {
-      print_log "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${END_COMMIT} exist, will copy"  "$UPDATE_LOG"
-      cp -rf "${IMAGE_FOLDER}/${BI_CSV}${SPECIFIC_KER}_${END_COMMIT}" "$BISECT_CSV"
+    [[ -e "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${END_COMMIT}" ]] && {
+      print_log "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${END_COMMIT} exist, will copy"  "$UPDATE_LOG"
+      cp -rf "${IMAGE_FOLDER}/${BI_CSV}${KER_SRC_PATH}_${END_COMMIT}" "$BISECT_CSV"
     }
   fi
+}
+
+change_ker_src_path() {
+  KER_SRC_PATH=$(echo "$SPECIFIC_KER" | tr "/" "_")
 }
 
 # If End commit didn't change, will not back up, and copy previous csv and crashes
@@ -76,6 +82,7 @@ check_backup() {
   local pre_end_commit=""
   local pre_ker_src=""
 
+  change_ker_src_path
   pre_end_tag=$(cat "$TAG_ORIGIN" 2>/dev/null)
   pre_end_commit=$(cat "$ECOM_FILE" 2>/dev/null)
   pre_ker_src=$(cat "$KSRC_FILE" 2>/dev/null)
@@ -106,6 +113,7 @@ check_summary_csv_backup() {
   local pre_end_tag_csv=""
   local pre_end_com_csv=""
 
+  change_ker_src_path
   if [[ -e "$PRE_ECOM_FILE" ]]; then
     pre_end_commit=$(cat "$PRE_ECOM_FILE")
     [[ -e "$PRE_TAG_ORIGIN" ]] && pre_end_tag=$(cat "$PRE_TAG_ORIGIN")
@@ -114,12 +122,12 @@ check_summary_csv_backup() {
     else
       mkdir -p "$BACKUP_CSV"
       if [[ -n "$pre_end_tag" ]]; then
-        pre_end_tag_csv="${BACKUP_CSV}/summary_c_${IP}_${HOST}_${SPECIFIC_KER}_${pre_end_tag}.csv"
+        pre_end_tag_csv="${BACKUP_CSV}/summary_c_${IP}_${HOST}_${KER_SRC_PATH}_${pre_end_tag}.csv"
         print_log "End commit:$END_COMMIT not same pre:$pre_end_commit, backup to $pre_end_tag_csv." "$UPDATE_LOG"
         mv "$SUMMARY_C_CSV" "$pre_end_tag_csv"
         head -n 1 "$pre_end_tag_csv" > "$SUMMARY_C_CSV"
       else
-        pre_end_com_csv="${BACKUP_CSV}/summary_c_${IP}_${HOST}_${SPECIFIC_KER}_${pre_end_commit}.csv"
+        pre_end_com_csv="${BACKUP_CSV}/summary_c_${IP}_${HOST}_${KER_SRC_PATH}_${pre_end_commit}.csv"
         print_log "End commit:$END_COMMIT not same pre:$pre_end_commit, backup to $pre_end_com_csv." "$UPDATE_LOG"
         mv "$SUMMARY_C_CSV" "$pre_end_com_csv"
         head -n 1 "$pre_end_com_csv" > "$SUMMARY_C_CSV"
